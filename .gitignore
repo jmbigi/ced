@@ -11,3 +11,5 @@ parenstest.py
 hashtest2.py
 hashnl.py
 CED-CODING-STANDARDS.md
+dist/
+build/

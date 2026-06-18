@@ -3,4 +3,6 @@ Name: ced
 Version: 0.1.0
 Summary: Terminal-native code editor
 Requires-Python: >=3.11
+License-File: LICENSE
 Requires-Dist: textual>=8.0.0
+Dynamic: license-file
