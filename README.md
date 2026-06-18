@@ -173,4 +173,4 @@ src/ced/
 - **OpenCode** CLI (optional) — AI integration
 
 ## License
-MIT
+AGPLv3. See [LICENSE](LICENSE) for details.
