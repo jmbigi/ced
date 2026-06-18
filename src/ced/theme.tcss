@@ -1,0 +1,83 @@
+Header {
+    dock: top;
+    height: 1;
+}
+
+Horizontal {
+    height: 1fr;
+}
+
+#sidebar {
+    width: 28;
+    dock: left;
+    border-right: solid $primary;
+    background: $surface;
+}
+
+#sidebar > FileTreePanel {
+    height: 100%;
+    overflow-y: auto;
+}
+
+#editor-area {
+    width: 1fr;
+    height: 100%;
+}
+
+#editor-area > EditorArea {
+    height: 100%;
+}
+
+#opencode-panel {
+    width: 36;
+    dock: right;
+    border-left: solid $primary;
+    background: $surface;
+}
+
+FileTreePanel {
+    height: 100%;
+    padding: 0 1;
+}
+
+EditorArea {
+    height: 100%;
+}
+
+TabbedContent {
+    height: 100%;
+}
+
+EnhancedCodeEditor {
+    height: 100%;
+}
+
+OpenCodePanel {
+    height: 100%;
+}
+
+OpenCodePanel RichLog {
+    height: 1fr;
+}
+
+OpenCodePanel Input {
+    dock: bottom;
+    height: 1;
+    margin: 0 1 1 1;
+}
+
+#search-bar {
+    dock: top;
+    height: auto;
+    display: none;
+    background: $surface;
+    border-bottom: solid $primary;
+}
+
+#help-bar {
+    dock: bottom;
+    height: 1;
+    background: $boost;
+    color: $text-muted;
+    padding: 0;
+}

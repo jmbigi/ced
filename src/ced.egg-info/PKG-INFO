@@ -1,0 +1,6 @@
+Metadata-Version: 2.4
+Name: ced
+Version: 0.1.0
+Summary: Terminal-native code editor
+Requires-Python: >=3.11
+Requires-Dist: textual>=8.0.0

@@ -1,0 +1,13 @@
+.ced/
+.venv/
+__pycache__/
+*.pyc
+*.tmp
+pyproject_fix_line.tmp
+quick_test.txt
+shorttest.py
+indenttest.py
+parenstest.py
+hashtest2.py
+hashnl.py
+CED-CODING-STANDARDS.md

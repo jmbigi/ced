@@ -1,0 +1,2 @@
+[console_scripts]
+ced = ced.__main__:main
