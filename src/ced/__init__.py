@@ -1,11 +1,16 @@
-from importlib.metadata import PackageNotFoundError, version as _metadata_version
+from importlib.metadata import version as _metadata_version
 
 from ced.app import Ced
 from ced.config import Config
 
 __all__ = ["Ced", "Config"]
 
-try:
-    __version__ = _metadata_version("ced")
-except PackageNotFoundError:
-    __version__ = "0.1.0"
+
+def _get_version() -> str:
+    try:
+        return _metadata_version("ced")
+    except Exception:
+        return "0.1.0"
+
+
+__version__ = _get_version()

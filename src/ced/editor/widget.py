@@ -128,7 +128,7 @@ class EnhancedCodeEditor(TextArea):
         p = Path(path)
         self.file_path = p
         self.text = p.read_text(encoding="utf-8", errors="replace")
-        self.clear_history()
+        self.history.clear()
 
     def save_file(self) -> bool:
         if self._file_path is None:

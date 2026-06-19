@@ -225,8 +225,8 @@ class Ced(App):
             warning=theme_vars["warning"],
             error=theme_vars["error"],
             success=theme_vars["success"],
-            text_muted=theme_vars["text-muted"],
             dark=is_dark,
+            variables={"text-muted": theme_vars["text-muted"]},
         )
         self.register_theme(theme)
         self.theme = self.config.theme.name
@@ -289,7 +289,7 @@ class Ced(App):
             active.redo()
 
     def action_command_palette(self) -> None:
-        commands = [(cmd.id, cmd.name, cmd.category) for cmd in self.commands.all()]
+        commands = [(cmd.id, cmd.description, cmd.category) for cmd in self.commands.all()]
         self.push_screen(CommandPalette(commands), self._on_command_selected)
 
     def _on_command_selected(self, command_id: str | None) -> None:

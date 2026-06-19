@@ -89,3 +89,35 @@ class TestEnhancedCodeEditor:
         editor = EnhancedCodeEditor()
         editor.save_as(dest)
         assert editor.language == "python"
+
+    def test_load_file_reads_content(self, tmp_path: Path) -> None:
+        src = tmp_path / "hello.py"
+        src.write_text("print('hello')")
+        editor = EnhancedCodeEditor()
+        editor.load_file(src)
+        assert editor.text == "print('hello')"
+        assert editor.file_path == src
+        assert editor.language == "python"
+
+    def test_load_file_clears_history(self, tmp_path: Path) -> None:
+        src = tmp_path / "foo.txt"
+        src.write_text("data")
+        editor = EnhancedCodeEditor()
+        editor.text = "old data"
+        editor.load_file(src)
+        assert editor.text == "data"
+
+    def test_save_file_success(self, tmp_path: Path) -> None:
+        dest = tmp_path / "out.txt"
+        editor = EnhancedCodeEditor(path=dest)
+        editor.text = "saved content"
+        result = editor.save_file()
+        assert result is True
+        assert dest.read_text() == "saved content"
+
+    def test_save_file_updates_modified_flag(self, tmp_path: Path) -> None:
+        dest = tmp_path / "flag.txt"
+        editor = EnhancedCodeEditor(path=dest)
+        editor.text = "data"
+        editor.save_file()
+        assert editor.file_path == dest

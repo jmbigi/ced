@@ -53,15 +53,19 @@ class EditorArea(Widget):
         self._tab_counter += 1
         return f"{base}_{self._tab_counter}"
 
+    def _sanitize_id(self, name: str) -> str:
+        return "".join(c if c.isalnum() or c == "_" else "_" for c in name)
+
     def _tab_id(self, name: str) -> str:
-        return f"tab_{name}"
+        return f"tab_{self._sanitize_id(name)}"
 
     def _editor_id(self, name: str) -> str:
-        return f"editor_{name}"
+        return f"editor_{self._sanitize_id(name)}"
 
     def new_file(self) -> None:
         self._tab_counter += 1
         name = f"untitled_{self._tab_counter}"
+        safe_key = self._sanitize_id(name)
         tab_id = self._tab_id(name)
         editor_id = self._editor_id(name)
         tabs = self.query_one(TabbedContent)
@@ -76,7 +80,7 @@ class EditorArea(Widget):
         pane.compose_add_child(editor)
         tabs.add_pane(pane)
         tabs.active = tab_id
-        self._editors[name] = editor
+        self._editors[safe_key] = editor
         self._tab_ids.append(tab_id)
 
     def open_file(self, path: Path) -> None:
@@ -91,6 +95,7 @@ class EditorArea(Widget):
 
         name = path.name
         unique = self._unique_name(name)
+        safe_key = self._sanitize_id(unique)
         tab_id = self._tab_id(unique)
         editor_id = self._editor_id(unique)
 
@@ -114,7 +119,7 @@ class EditorArea(Widget):
         pane.compose_add_child(editor)
         tabs.add_pane(pane)
         tabs.active = tab_id
-        self._editors[unique] = editor
+        self._editors[safe_key] = editor
         self._tab_ids.append(tab_id)
 
     def get_active_editor(self) -> EnhancedCodeEditor | None:
