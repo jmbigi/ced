@@ -53,6 +53,15 @@ def _widget_tree_audit(app: App, handler: Any = None) -> str:
     lines: list[str] = []
     total_issues = 0
 
+    def _ancestor_hidden(w: Widget) -> bool:
+        """Verificar si algún ancestro está oculto."""
+        parent = getattr(w, "parent", None)
+        while parent is not None:
+            if not getattr(parent, "display", True):
+                return True
+            parent = getattr(parent, "parent", None)
+        return False
+
     def _audit_widget(w: Widget, depth: int = 0) -> None:
         nonlocal total_issues
         indent = "  " * depth
@@ -71,6 +80,9 @@ def _widget_tree_audit(app: App, handler: Any = None) -> str:
                 is_hidden = True
             elif not w.visible:
                 info += " invisible"
+            elif _ancestor_hidden(w):
+                info += " (ancestro oculto)"
+                is_hidden = True
         except Exception:
             pass
 

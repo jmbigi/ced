@@ -43,6 +43,14 @@ TabbedContent {
     height: 100%;
 }
 
+ContentSwitcher {
+    height: 1fr;
+}
+
+TabPane {
+    height: 100%;
+}
+
 EnhancedCodeEditor {
     height: 100%;
 }
