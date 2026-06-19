@@ -6,6 +6,7 @@ from ced.panels.search_bar import SearchBar
 from ced.panels.palette import CommandPalette
 from ced.panels.quick_open import QuickOpen
 from ced.panels.jump import JumpMode
+from ced.panels.terminal import TerminalPanel
 
 __all__ = [
     "CommandPalette",
@@ -17,4 +18,5 @@ __all__ = [
     "OpenCodePanel",
     "QuickOpen",
     "SearchBar",
+    "TerminalPanel",
 ]

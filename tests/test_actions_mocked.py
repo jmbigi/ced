@@ -379,6 +379,24 @@ def test_on_replace_all_requested():
         app.on_search_bar_replace_requested(event)
 
 
+def test_action_toggle_terminal():
+    app = Ced()
+    mock_term = MagicMock()
+    mock_term.display = False
+    call_count = [0]
+    mock_input = MagicMock()
+
+    def qse(*a, **kw):
+        call_count[0] += 1
+        if call_count[0] >= 2:
+            return mock_input
+        return mock_term
+
+    with patch.object(app, "query_one", side_effect=qse):
+        app.action_toggle_terminal()
+        assert mock_term.display is True
+
+
 def test_on_replace_requested_no_find():
     app = Ced()
     from ced.panels.search_bar import SearchBar

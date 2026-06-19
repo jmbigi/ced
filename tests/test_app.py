@@ -15,8 +15,7 @@ async def test_app_title() -> None:
 @pytest.mark.asyncio
 async def test_app_bindings_count() -> None:
     app = Ced()
-    # 15 app-level bindings defined in BINDINGS
-    assert len(app.BINDINGS) == 15
+    assert len(app.BINDINGS) == 16
 
 
 @pytest.mark.asyncio
@@ -34,7 +33,7 @@ async def test_app_config_loaded() -> None:
 async def test_app_command_registry() -> None:
     app = Ced()
     all_cmds = app.commands.all()
-    assert len(all_cmds) == 21
+    assert len(all_cmds) == 22
     ids = {c.id for c in all_cmds}
     assert "app.quit" in ids
     assert "app.save" in ids

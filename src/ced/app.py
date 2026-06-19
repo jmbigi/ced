@@ -18,7 +18,9 @@ from ced.panels.help_bar import HelpBar
 from ced.panels.palette import CommandPalette
 from ced.panels.quick_open import QuickOpen
 from ced.panels.search_bar import SearchBar
+from ced.panels.confirm import ConfirmScreen
 from ced.panels.jump import JumpMode
+from ced.panels.terminal import TerminalPanel
 from textual.theme import Theme
 
 from ced.keybindings.manager import KeybindingManager
@@ -51,6 +53,7 @@ class Ced(App):
         Binding("ctrl+tab", "next_tab", "Next Tab"),
         Binding("ctrl+shift+tab", "prev_tab", "Prev Tab"),
         Binding("ctrl+j", "jump_mode", "Jump"),
+        Binding("ctrl+t", "toggle_terminal", "Terminal"),
         Binding("ctrl+z", "undo", "Undo"),
         Binding("ctrl+y", "redo", "Redo"),
     ]
@@ -141,6 +144,12 @@ class Ced(App):
             ),
             Command("app.undo", "Undo last change", self.action_undo, "Edit"),
             Command("app.redo", "Redo last undone change", self.action_redo, "Edit"),
+            Command(
+                "app.toggle_terminal",
+                "Toggle terminal panel (Ctrl+T)",
+                self.action_toggle_terminal,
+                "View",
+            ),
         )
 
     def compose(self) -> ComposeResult:
@@ -157,6 +166,7 @@ class Ced(App):
                     id="editor",
                 )
                 yield SearchBar(id="search-bar")
+                yield TerminalPanel(id="terminal")
             with Vertical(id="opencode-panel"):
                 yield OpenCodePanel(
                     opencode_path=self.config.opencode.path,
@@ -179,6 +189,7 @@ class Ced(App):
             "ctrl+o": "^O",
             "ctrl+x": "^X",
             "ctrl+g": "^G",
+            "ctrl+t": "^T",
             "ctrl+z": "^Z",
             "ctrl+y": "^Y",
             "ctrl+grave_accent": "GRV",
@@ -239,6 +250,11 @@ class Ced(App):
     def action_toggle_sidebar(self) -> None:
         self.query_one("#sidebar").display ^= True
 
+    def action_toggle_terminal(self) -> None:
+        self.query_one("#terminal").display ^= True
+        if self.query_one("#terminal").display:
+            self.query_one("#terminal").focus()
+
     def action_toggle_opencode(self) -> None:
         self.query_one("#opencode-panel").display ^= True
         if self.query_one("#opencode-panel").display:
@@ -253,13 +269,20 @@ class Ced(App):
         editor = self.query_one("#editor", EditorArea)
         buf = editor.buffers.active_buffer
         if buf and buf.is_modified:
-            result = await self.confirm(
-                f"'{buf.name}' has unsaved changes. Close anyway?",
-                title="Unsaved Changes",
+            self.push_screen(
+                ConfirmScreen(
+                    f"'{buf.name}' has unsaved changes. Close anyway?",
+                    title="Unsaved Changes",
+                ),
+                self._on_close_tab_confirm,
             )
-            if not result:
-                return
-        editor.close_active()
+        else:
+            editor.close_active()
+
+    def _on_close_tab_confirm(self, result: bool) -> None:
+        if result:
+            editor = self.query_one("#editor", EditorArea)
+            editor.close_active()
 
     def action_open_file(self) -> None:
         self.query_one("#file-tree", FileTreePanel).focus()

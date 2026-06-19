@@ -19,6 +19,7 @@ PRESET_DEFINITIONS: dict[str, list[TextualBinding]] = {
         TextualBinding("ctrl+n", "new_file", "New File"),
         TextualBinding("ctrl+z", "undo", "Undo"),
         TextualBinding("ctrl+y", "redo", "Redo"),
+        TextualBinding("ctrl+t", "toggle_terminal", "Terminal"),
         TextualBinding("ctrl+tab", "next_tab", "Next Tab"),
         TextualBinding("ctrl+shift+tab", "prev_tab", "Previous Tab"),
         TextualBinding("ctrl+j", "jump_mode", "Jump"),
