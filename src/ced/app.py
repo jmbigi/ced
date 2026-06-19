@@ -18,7 +18,7 @@ from ced.panels.help_bar import HelpBar
 from ced.panels.palette import CommandPalette
 from ced.panels.quick_open import QuickOpen
 from ced.panels.search_bar import SearchBar
-from ced.panels.confirm import ConfirmScreen
+
 from ced.panels.jump import JumpMode
 from ced.panels.terminal import TerminalPanel
 from textual.theme import Theme
@@ -269,20 +269,13 @@ class Ced(App):
         editor = self.query_one("#editor", EditorArea)
         buf = editor.buffers.active_buffer
         if buf and buf.is_modified:
-            self.push_screen(
-                ConfirmScreen(
-                    f"'{buf.name}' has unsaved changes. Close anyway?",
-                    title="Unsaved Changes",
-                ),
-                self._on_close_tab_confirm,
+            result = await self.confirm(
+                f"'{buf.name}' has unsaved changes. Close anyway?",
+                title="Unsaved Changes",
             )
-        else:
-            editor.close_active()
-
-    def _on_close_tab_confirm(self, result: bool) -> None:
-        if result:
-            editor = self.query_one("#editor", EditorArea)
-            editor.close_active()
+            if not result:
+                return
+        editor.close_active()
 
     def action_open_file(self) -> None:
         self.query_one("#file-tree", FileTreePanel).focus()

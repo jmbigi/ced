@@ -138,3 +138,141 @@ class TestTerminalPanel:
         t._running = False
         t._fd = 999
         t.write("test")  # should not write because not running
+
+    def test_write_with_oserror(self) -> None:
+        t = TerminalPanel()
+        t._fd = 999
+        t._running = True
+        with patch("os.write", side_effect=OSError("broken pipe")):
+            with patch.object(t, "_kill_shell") as mock_kill:
+                t.write("data")
+                mock_kill.assert_called_once()
+
+    def test_kill_shell_with_pid_and_fd(self) -> None:
+        t = TerminalPanel()
+        t._fd = 999
+        t._pid = 12345
+        t._running = True
+        with patch("os.close"):
+            with patch("os.kill"):
+                with patch("os.waitpid"):
+                    with patch("asyncio.get_event_loop") as mock_loop:
+                        mock_loop.return_value.remove_reader = lambda x: None
+                        t._kill_shell()
+        assert t._fd is None
+        assert t._pid is None
+        assert t._running is False
+
+    def test_kill_shell_no_pid_no_fd(self) -> None:
+        t = TerminalPanel()
+        t._kill_shell()  # should not crash
+
+    def test_kill_shell_oserror_ignored(self) -> None:
+        t = TerminalPanel()
+        t._fd = 999
+        t._pid = 12345
+        with patch("os.close", side_effect=OSError):
+            with patch("os.kill", side_effect=OSError):
+                with patch("asyncio.get_event_loop"):
+                    t._kill_shell()  # should not crash
+
+    def test_on_unmount(self) -> None:
+        t = TerminalPanel()
+        with patch.object(t, "_kill_shell") as mock_kill:
+            t.on_unmount()
+            mock_kill.assert_called_once()
+
+    def test_on_key_character(self) -> None:
+        t = TerminalPanel()
+        t._fd = 999
+        t._running = True
+        with patch.object(t, "write") as mock_write:
+            from textual.events import Key
+
+            ev = Key(key="a", character="a")
+            t._on_key(ev)
+            mock_write.assert_called_once_with("a")
+
+    def test_on_key_enter(self) -> None:
+        t = TerminalPanel()
+        t._fd = 999
+        t._running = True
+        with patch.object(t, "write") as mock_write:
+            from textual.events import Key
+
+            ev = Key(key="enter", character=None)
+            t._on_key(ev)
+            mock_write.assert_called_once_with("\r")
+
+    def test_on_key_backspace(self) -> None:
+        t = TerminalPanel()
+        t._fd = 999
+        t._running = True
+        with patch.object(t, "write") as mock_write:
+            from textual.events import Key
+
+            ev = Key(key="backspace", character=None)
+            t._on_key(ev)
+            mock_write.assert_called_once_with("\b")
+
+    def test_on_key_tab(self) -> None:
+        t = TerminalPanel()
+        t._fd = 999
+        t._running = True
+        with patch.object(t, "write") as mock_write:
+            from textual.events import Key
+
+            ev = Key(key="tab", character=None)
+            t._on_key(ev)
+            mock_write.assert_called_once_with("\t")
+
+    def test_on_key_escape(self) -> None:
+        t = TerminalPanel()
+        t._fd = 999
+        t._running = True
+        with patch.object(t, "write") as mock_write:
+            from textual.events import Key
+
+            ev = Key(key="escape", character=None)
+            t._on_key(ev)
+            mock_write.assert_called_once_with("\x1b")
+
+    def test_on_key_space(self) -> None:
+        t = TerminalPanel()
+        t._fd = 999
+        t._running = True
+        with patch.object(t, "write") as mock_write:
+            from textual.events import Key
+
+            ev = Key(key="space", character=None)
+            t._on_key(ev)
+            mock_write.assert_called_once_with(" ")
+
+    def test_on_key_not_running(self) -> None:
+        t = TerminalPanel()
+        with patch.object(t, "write") as mock_write:
+            from textual.events import Key
+
+            ev = Key(key="a", character="a")
+            t._on_key(ev)
+            mock_write.assert_not_called()
+
+    def test_on_key_no_fd(self) -> None:
+        t = TerminalPanel()
+        t._running = True
+        with patch.object(t, "write") as mock_write:
+            from textual.events import Key
+
+            ev = Key(key="a", character="a")
+            t._on_key(ev)
+            mock_write.assert_not_called()
+
+    def test_on_pty_read_no_fd(self) -> None:
+        t = TerminalPanel()
+        t._on_pty_read()  # fd is None → early return
+
+    def test_render_line_when_stopped(self) -> None:
+        t = TerminalPanel()
+        t._running = False
+        strip = t.render_line(0)
+        assert strip is not None

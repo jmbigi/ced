@@ -3,12 +3,14 @@ from __future__ import annotations
 import asyncio
 import os
 import pty
+import signal
 import struct
 import termios
 import fcntl
 
 import pyte
 
+from textual.events import Key
 from textual.strip import Strip
 from textual.widget import Widget
 
@@ -52,11 +54,35 @@ class TerminalPanel(Widget):
     def on_mount(self) -> None:
         self._start_shell()
 
+    def on_unmount(self) -> None:
+        self._kill_shell()
+
+    def _kill_shell(self) -> None:
+        self._running = False
+        if self._fd is not None:
+            loop = asyncio.get_event_loop()
+            try:
+                loop.remove_reader(self._fd)
+            except Exception:
+                pass
+            try:
+                os.close(self._fd)
+            except Exception:
+                pass
+            self._fd = None
+        if self._pid is not None:
+            try:
+                os.kill(self._pid, signal.SIGKILL)
+                os.waitpid(self._pid, 0)
+            except Exception:
+                pass
+            self._pid = None
+        self.refresh()
+
     def _start_shell(self) -> None:
         """Fork a shell process in a PTY."""
         pid, fd = pty.fork()
         if pid == 0:
-            # Child process: set up environment and exec shell
             os.environ.setdefault("TERM", "xterm-256color")
             os.execvp(self._shell, [self._shell])
         else:
@@ -75,33 +101,45 @@ class TerminalPanel(Widget):
 
     def _on_pty_read(self) -> None:
         """Called by the event loop when data is available on the PTY."""
+        if self._fd is None:
+            return
         try:
             data = os.read(self._fd, 65536)
         except OSError:
-            self._on_pty_close()
+            self._kill_shell()
             return
         if not data:
-            self._on_pty_close()
+            self._kill_shell()
             return
         self._stream.feed(data.decode("utf-8", errors="replace"))
-        self.refresh()
-
-    def _on_pty_close(self) -> None:
-        """Clean up when the PTY closes."""
-        self._running = False
-        loop = asyncio.get_event_loop()
-        try:
-            loop.remove_reader(self._fd)
-        except Exception:
-            pass
-        self._fd = None
-        self._pid = None
         self.refresh()
 
     def write(self, data: str) -> None:
         """Write data to the PTY (sent by the user's keystrokes)."""
         if self._fd is not None and self._running:
-            os.write(self._fd, data.encode("utf-8"))
+            try:
+                os.write(self._fd, data.encode("utf-8"))
+            except OSError:
+                self._kill_shell()
+
+    def _on_key(self, event: Key) -> None:
+        """Forward key events to the PTY."""
+        if not self._running or self._fd is None:
+            return
+        if event.character is not None:
+            self.write(event.character)
+        elif event.key == "enter":
+            self.write("\r")
+        elif event.key == "backspace":
+            self.write("\b")
+        elif event.key == "tab":
+            self.write("\t")
+        elif event.key == "escape":
+            self.write("\x1b")
+        elif event.key == "space":
+            self.write(" ")
+        elif len(event.key) == 1:
+            self.write(event.key)
 
     def render_line(self, y: int) -> Strip:
         """Render one line of the terminal output."""
