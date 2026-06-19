@@ -84,7 +84,9 @@ class EditorArea(Widget):
         self._tab_ids.append(tab_id)
         editor.focus()
 
-    def open_file(self, path: Path) -> None:
+    def open_file(self, path: Path | str) -> None:
+        if isinstance(path, str):
+            path = Path(path)
         existing = self.buffers.get_by_path(path)
         if existing is not None:
             idx = next(

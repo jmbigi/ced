@@ -21,6 +21,7 @@ from ced.panels.search_bar import SearchBar
 
 from ced.panels.jump import JumpMode
 from ced.panels.terminal import TerminalPanel
+from ced.panels.confirm import ConfirmScreen
 
 from textual.theme import Theme
 
@@ -270,9 +271,11 @@ class Ced(App):
         editor = self.query_one("#editor", EditorArea)
         buf = editor.buffers.active_buffer
         if buf and buf.is_modified:
-            result = await self.confirm(
-                f"'{buf.name}' has unsaved changes. Close anyway?",
-                title="Unsaved Changes",
+            result = await self.push_screen(
+                ConfirmScreen(
+                    f"'{buf.name}' has unsaved changes. Close anyway?",
+                    title="Unsaved Changes",
+                )
             )
             if not result:
                 return
