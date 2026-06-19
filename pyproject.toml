@@ -27,6 +27,7 @@ asyncio_mode = "auto"
 markers = [
     "sandbox: test uses sandboxed temporary files",
     "snapshot: test uses visual snapshot comparison",
+    "visual: test uses Xvfb + pyautogui for PNG screenshot capture",
 ]
 
 [tool.coverage.run]
