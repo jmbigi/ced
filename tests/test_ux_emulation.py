@@ -346,6 +346,64 @@ async def test_ux_rapid_open_close(tmp_path: Path) -> None:
         assert ea.buffers.count >= 20
 
 
+# ── Full workflow: write → open → modify → save → save_as → open_again → edit ─
+
+
+@pytest.mark.sandbox
+@pytest.mark.asyncio
+async def test_ux_full_file_workflow(tmp_path: Path) -> None:
+    """Create → open → modify → save → save as → reopen → modify again."""
+    original = tmp_path / "original.py"
+    original.write_text("")
+    copy = tmp_path / "copy.py"
+
+    app = Ced()
+    async with app.run_test(size=(120, 40)) as pilot:
+        await pilot.pause()
+        ea = app.query_one("#editor")
+
+        # 1. Open empty file → edit text
+        ea.open_file(original)
+        await pilot.pause()
+        ed = ea.get_active_editor()
+        assert ed is not None
+        ed.text = "x = 1"
+        await pilot.pause()
+
+        # 2. Save → verify on disk
+        assert ea.save_active() is True
+        assert original.read_text() == "x = 1"
+
+        # 3. Modify again
+        ed.text = "x = 1\ny = 2"
+        await pilot.pause()
+
+        # 4. Save as → new file
+        ed.save_as(copy)
+        await pilot.pause()
+        assert copy.read_text() == "x = 1\ny = 2"
+
+        # 5. Open another file, edit, save
+        third = tmp_path / "third.py"
+        third.write_text("")
+        ea.open_file(third)
+        await pilot.pause()
+        ed2 = ea.get_active_editor()
+        assert ed2 is not None
+        ed2.text = "z = 3"
+        await pilot.pause()
+        assert ea.save_active() is True
+        assert third.read_text() == "z = 3"
+
+        # 6. Re-open original → buffer cache returns last-saved text
+        ea.open_file(original)
+        await pilot.pause()
+        ed3 = ea.get_active_editor()
+        assert ed3 is not None
+        # Buffer was modified (x=1\n y=2) and saved-as → cache has modified text
+        assert ed3.text == "x = 1\ny = 2"
+
+
 # ── Real-user flow: unsaved changes warning ─────────────────────────────
 
 
