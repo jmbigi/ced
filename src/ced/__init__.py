@@ -1,4 +1,4 @@
-﻿from ced.app import Ced
+from ced.app import Ced
 from ced.config import Config
 
 __all__ = ["Ced", "Config"]

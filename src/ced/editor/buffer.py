@@ -8,7 +8,12 @@ class Buffer:
     def __init__(self, path: Path | None = None) -> None:
         self.path = path
         self.is_modified = False
-        self.is_new = True
+
+    def mark_modified(self) -> None:
+        self.is_modified = True
+
+    def mark_saved(self) -> None:
+        self.is_modified = False
 
     @property
     def name(self) -> str:
@@ -65,7 +70,9 @@ class BufferManager:
     def remove(self, index: int) -> None:
         if 0 <= index < len(self._buffers):
             self._buffers.pop(index)
-            if self._active_index >= len(self._buffers):
+            if self._active_index > index:
+                self._active_index -= 1
+            elif self._active_index >= len(self._buffers):
                 self._active_index = max(0, len(self._buffers) - 1)
 
     def get_by_path(self, path: Path) -> Buffer | None:
@@ -80,7 +87,6 @@ class BufferManager:
             self._active_index = self._buffers.index(existing)
             return existing
         buf = self.add(path)
-        buf.is_new = False
         return buf
 
     def close_active(self) -> Buffer | None:

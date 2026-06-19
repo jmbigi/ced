@@ -45,6 +45,13 @@ class SearchBar(Widget):
             super().__init__()
             self.query = query
 
+    class ReplaceRequested(Message):
+        def __init__(self, find: str, replace: str, all: bool = False) -> None:
+            super().__init__()
+            self.find = find
+            self.replace = replace
+            self.all = all
+
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._show_replace = False
@@ -70,6 +77,21 @@ class SearchBar(Widget):
             row = self.query_one("#replace-row")
             row.display = self._show_replace
             event.button.label = "△" if self._show_replace else "▽"
+        elif event.button.id == "replace-btn":
+            self.post_message(self.ReplaceRequested(
+                self.get_search_text(), self.get_replace_text(), all=False,
+            ))
+        elif event.button.id == "replace-all-btn":
+            self.post_message(self.ReplaceRequested(
+                self.get_search_text(), self.get_replace_text(), all=True,
+            ))
+
+    def show_replace_ui(self, show: bool) -> None:
+        self._show_replace = show
+        row = self.query_one("#replace-row")
+        row.display = show
+        toggle = self.query_one("#toggle-replace")
+        toggle.label = "△" if show else "▽"
 
     def get_search_text(self) -> str:
         return self.query_one("#find-input", Input).value

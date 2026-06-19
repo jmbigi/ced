@@ -8,6 +8,7 @@
 - **VS Code spirit, terminal form** — file tree sidebar, editor tabs, command palette, quick open, multi-keybinding presets.
 - **Plug and play** — `pip install ced` + `ced` opens an editor. No configuration required.
 - **AI-ready** — the OpenCode panel is designed for integrated AI assistance via the OpenCode CLI.
+- **Safe, modern, advanced, robust** — editing modes that protect your data, resist crashes, and provide a smooth, professional editing experience in any terminal environment.
 
 ## Features
 
@@ -24,6 +25,10 @@
 | Search & Replace (Ctrl+H) | Done |
 | Command palette (Ctrl+Shift+P) | Done |
 | Jump Mode (Ctrl+J) — 2-character navigation | Done |
+| Undo (Ctrl+Z) / Redo (Ctrl+Y) | Done |
+| New file (Ctrl+N) | Done |
+| Switch theme at runtime (via command palette) | Done |
+| Switch keybinding preset at runtime (via command palette) | Done |
 | Keybinding presets: VS Code, nano, Sublime, Emacs | Done |
 | Help bar with visible shortcuts | Done |
 | Toggle sidebar (Ctrl+B) | Done |
@@ -67,6 +72,8 @@ python -m ced
 | Ctrl+F | Search in file |
 | Ctrl+H | Search & replace |
 | Ctrl+N | New file |
+| Ctrl+Z | Undo |
+| Ctrl+Y | Redo |
 | Ctrl+J | Jump Mode (type 2 chars to navigate) |
 | Ctrl+Tab | Next tab |
 | Ctrl+Shift+Tab | Previous tab |
@@ -78,8 +85,8 @@ Switch presets at runtime from the command palette (`Ctrl+Shift+P`):
 | Preset | Distinctive keys |
 |--------|-----------------|
 | **VS Code** (default) | Ctrl+S save, Ctrl+P open, Ctrl+` panel |
-| **nano** | Ctrl+O writeout, Ctrl+W search, Ctrl+K cut |
-| **Sublime** | Ctrl+Shift+P palette, Ctrl+P goto |
+| **nano** | Ctrl+O writeout, Ctrl+W search, Ctrl+X exit |
+| **Sublime** | Ctrl+Shift+P palette, Ctrl+P goto, Ctrl+Z undo |
 | **Emacs** | Ctrl+X Ctrl+S save, Ctrl+X Ctrl+F find |
 
 ## Themes
@@ -129,8 +136,10 @@ preset = "vscode"  # "vscode", "nano", "sublime", or "emacs"
 
 [opencode]
 path = "opencode"  # OpenCode CLI path
-auto_start = true
+auto_start = true  # check CLI availability on startup
 ```
+
+> Fields `indent_guides`, `font_size`, and `show_minimap` in `[editor]` are stored in the config for forward compatibility but are not yet wired to the editor widget — they will be activated in a future release.
 
 ## Project Layout
 
@@ -138,9 +147,10 @@ auto_start = true
 src/ced/
 ├── __init__.py          # Package init (exports Ced, Config, __version__)
 ├── __main__.py          # Entry point: python -m ced
-├── app.py               # Main App class (Ced) — 13 bindings, 17 commands
+├── app.py               # Main App class (Ced) — 15 bindings, 21 commands
 ├── config.py            # TOML config: dataclass + global/project merge
 ├── theme.tcss           # External CSS stylesheet
+├── types.py             # Shared type aliases (ThemeMode, KeybindingPreset)
 ├── commands/
 │   └── registry.py      # Command dataclass + CommandRegistry (fuzzy search)
 ├── editor/
@@ -160,8 +170,6 @@ src/ced/
 │   └── jump.py          # JumpMode (2-character navigation)
 ├── themes/
 │   └── manager.py       # Theme definitions + auto dark/light detection
-└── utils/
-    └── __init__.py
 ```
 
 ## Tech Stack

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import subprocess
 
+from textual import work
 from textual.app import ComposeResult
 from textual.containers import Vertical
 from textual.widgets import Static, Input, RichLog
@@ -39,9 +40,10 @@ class OpenCodePanel(Widget):
     }
     """
 
-    def __init__(self, opencode_path: str = "opencode", *args, **kwargs) -> None:
+    def __init__(self, opencode_path: str = "opencode", auto_start: bool = True, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._opencode_path = opencode_path
+        self._auto_start = auto_start
 
     def compose(self) -> ComposeResult:
         with Vertical():
@@ -50,10 +52,11 @@ class OpenCodePanel(Widget):
             yield Input(placeholder="Ask OpenCode...", id="opencode-input")
 
     def on_mount(self) -> None:
-        self._check_opencode()
+        if self._auto_start:
+            self._check_opencode()
 
+    @work(thread=True, exclusive=True)
     def _check_opencode(self) -> None:
-        log = self.query_one("#opencode-log", RichLog)
         try:
             result = subprocess.run(
                 [self._opencode_path, "--version"],
@@ -62,17 +65,22 @@ class OpenCodePanel(Widget):
                 timeout=5,
             )
             if result.returncode == 0:
-                log.write("[green]OpenCode ready[/green]")
+                self.app.call_from_thread(self._write_log, "[green]OpenCode ready[/green]")
             else:
-                log.write(
-                    f"[yellow]OpenCode found but responded: {result.stderr.strip()}[/yellow]"
+                self.app.call_from_thread(
+                    self._write_log,
+                    f"[yellow]OpenCode found but responded: {result.stderr.strip()}[/yellow]",
                 )
         except FileNotFoundError:
-            log.write(
-                "[dim]OpenCode CLI not found. Install with: pip install opencode[/dim]"
+            self.app.call_from_thread(
+                self._write_log,
+                "[dim]OpenCode CLI not found. Install with: pip install opencode[/dim]",
             )
         except subprocess.TimeoutExpired:
-            log.write("[red]OpenCode timed out[/red]")
+            self.app.call_from_thread(self._write_log, "[red]OpenCode timed out[/red]")
+
+    def _write_log(self, message: str) -> None:
+        self.query_one("#opencode-log", RichLog).write(message)
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
         if event.input.id == "opencode-input":
@@ -80,22 +88,24 @@ class OpenCodePanel(Widget):
             if not query.strip():
                 return
             event.input.clear()
-            log = self.query_one("#opencode-log", RichLog)
-            log.write(f"[bold]You:[/bold] {query}")
-            self._query_opencode(query, log)
+            self._write_log(f"[bold]You:[/bold] {query}")
+            self._query_opencode(query)
 
-    def _query_opencode(self, query: str, log: RichLog) -> None:
+    @work(thread=True, exclusive=True)
+    def _query_opencode(self, query: str) -> None:
         try:
             result = subprocess.run(
                 [self._opencode_path, query], capture_output=True, text=True, timeout=30
             )
             if result.returncode == 0:
-                log.write(f"[primary]OpenCode:[/primary] {result.stdout.strip()}")
+                self.app.call_from_thread(self._write_log, f"[primary]OpenCode:[/primary] {result.stdout.strip()}")
             else:
-                log.write(f"[red]Error:[/red] {result.stderr.strip() or 'no output'}")
+                self.app.call_from_thread(
+                    self._write_log, f"[red]Error:[/red] {result.stderr.strip() or 'no output'}"
+                )
         except FileNotFoundError:
-            log.write("[red]OpenCode CLI not available[/red]")
+            self.app.call_from_thread(self._write_log, "[red]OpenCode CLI not available[/red]")
         except subprocess.TimeoutExpired:
-            log.write("[red]Request timed out[/red]")
+            self.app.call_from_thread(self._write_log, "[red]Request timed out[/red]")
         except Exception as exc:
-            log.write(f"[red]{exc}[/red]")
+            self.app.call_from_thread(self._write_log, f"[red]{exc}[/red]")

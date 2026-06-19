@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from textual.binding import Binding as TextualBinding
 
+from ced.types import KeybindingPreset
 from ced.keybindings.presets import (
-    KeybindingPreset,
     get_preset,
     list_presets,
 )
@@ -37,9 +37,6 @@ class KeybindingManager:
     def remove_override(self, action: str) -> None:
         self._custom_overrides.pop(action, None)
         self._update_bindings()
-
-    def get_presets_list(self) -> list[str]:
-        return list_presets()
 
     def _update_bindings(self) -> None:
         preset_bindings = get_preset(self._current_preset)

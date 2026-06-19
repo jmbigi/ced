@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from dataclasses import dataclass
+
 from textual.app import ComposeResult
-from textual.message import Message
 from textual.widgets import TabbedContent, TabPane
 from textual.widget import Widget
 
@@ -11,34 +12,44 @@ from ced.editor.widget import EnhancedCodeEditor
 from ced.editor.buffer import BufferManager
 
 
+@dataclass
+class EditorSettings:
+    show_line_numbers: bool = True
+    soft_wrap: bool = False
+    indent_width: int = 4
+
+
 class EditorArea(Widget):
-    class OpenedFile(Message):
-        def __init__(self, path: Path) -> None:
-            super().__init__()
-            self.path = path
-
-    class FileSaved(Message):
-        def __init__(self, path: Path) -> None:
-            super().__init__()
-            self.path = path
-
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, editor_settings: EditorSettings | None = None, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        self._editor_settings = editor_settings or EditorSettings()
         self.buffers = BufferManager()
         self._editors: dict[str, EnhancedCodeEditor] = {}
-        self._open_tabs: set[str] = set()
+        self._tab_ids: list[str] = []
+        self._tab_counter = 0
 
     def compose(self) -> ComposeResult:
         with TabbedContent(initial="tab_untitled"):
             with TabPane("untitled", id="tab_untitled"):
-                yield EnhancedCodeEditor(id="editor_untitled")
+                yield EnhancedCodeEditor(
+                    id="editor_untitled",
+                    show_line_numbers=self._editor_settings.show_line_numbers,
+                    soft_wrap=self._editor_settings.soft_wrap,
+                    indent_width=self._editor_settings.indent_width,
+                )
 
     def on_mount(self) -> None:
         self._editors["untitled"] = self.query_one(
             "#editor_untitled", EnhancedCodeEditor
         )
-        self._open_tabs.add("tab_untitled")
+        self._tab_ids.append("tab_untitled")
         self.buffers.add()
+
+    def _unique_name(self, base: str) -> str:
+        if self._tab_id(base) not in self._tab_ids:
+            return base
+        self._tab_counter += 1
+        return f"{base}_{self._tab_counter}"
 
     def _tab_id(self, name: str) -> str:
         return f"tab_{name}"
@@ -46,20 +57,50 @@ class EditorArea(Widget):
     def _editor_id(self, name: str) -> str:
         return f"editor_{name}"
 
-    def open_file(self, path: Path) -> None:
-        name = path.name
+    def new_file(self) -> None:
+        self._tab_counter += 1
+        name = f"untitled_{self._tab_counter}"
         tab_id = self._tab_id(name)
         editor_id = self._editor_id(name)
-
         tabs = self.query_one(TabbedContent)
+        self.buffers.add()
+        editor = EnhancedCodeEditor(
+            id=editor_id,
+            show_line_numbers=self._editor_settings.show_line_numbers,
+            soft_wrap=self._editor_settings.soft_wrap,
+            indent_width=self._editor_settings.indent_width,
+        )
+        pane = TabPane(name, id=tab_id)
+        pane.compose_add_child(editor)
+        tabs.add_pane(pane)
+        tabs.active = tab_id
+        self._editors[name] = editor
+        self._tab_ids.append(tab_id)
 
-        if tab_id in self._open_tabs:
-            tabs.active = tab_id
+    def open_file(self, path: Path) -> None:
+        existing = self.buffers.get_by_path(path)
+        if existing is not None:
+            idx = next(
+                i for i in range(self.buffers.count) if self.buffers[i] is existing
+            )
+            if 0 <= idx < len(self._tab_ids):
+                self.query_one(TabbedContent).active = self._tab_ids[idx]
             return
 
+        name = path.name
+        unique = self._unique_name(name)
+        tab_id = self._tab_id(unique)
+        editor_id = self._editor_id(unique)
+
+        tabs = self.query_one(TabbedContent)
         self.buffers.open(path)
         try:
-            editor = EnhancedCodeEditor(path=path, id=editor_id)
+            editor = EnhancedCodeEditor(
+                path=path, id=editor_id,
+                show_line_numbers=self._editor_settings.show_line_numbers,
+                soft_wrap=self._editor_settings.soft_wrap,
+                indent_width=self._editor_settings.indent_width,
+            )
             editor.load_file(path)
         except (PermissionError, FileNotFoundError) as exc:
             self.notify(f"Cannot open {path.name}: {exc}", severity="error", timeout=5)
@@ -70,45 +111,83 @@ class EditorArea(Widget):
         pane.compose_add_child(editor)
         tabs.add_pane(pane)
         tabs.active = tab_id
-        self._editors[name] = editor
-        self._open_tabs.add(tab_id)
+        self._editors[unique] = editor
+        self._tab_ids.append(tab_id)
 
     def get_active_editor(self) -> EnhancedCodeEditor | None:
         tabs = self.query_one(TabbedContent)
         active = tabs.active
-        if active and active != "":
-            name = active.removeprefix("tab_")
-            editor_id = self._editor_id(name)
-            try:
-                return self.query_one(f"#{editor_id}", EnhancedCodeEditor)
-            except Exception:
-                return None
-        return None
+        if not active:
+            return None
+        name = active.removeprefix("tab_")
+        return self._editors.get(name)
 
-    def get_editor_paths(self) -> list[tuple[str, str]]:
-        result = []
-        for tab_id in self._open_tabs:
-            name = tab_id.removeprefix("tab_")
-            if name == "untitled":
-                result.append((tab_id, "untitled"))
-            else:
-                result.append((tab_id, name))
-        return result
+    def _sync_buffer_index(self) -> None:
+        tabs = self.query_one(TabbedContent)
+        active = tabs.active
+        if active in self._tab_ids:
+            idx = self._tab_ids.index(active)
+            if idx < self.buffers.count:
+                self.buffers.active_index = idx
+
+    def on_tabbed_content_tab_activated(self, event: TabbedContent.TabActivated) -> None:
+        event.stop()
+        self._sync_buffer_index()
+
+    def tab_next(self) -> None:
+        if not self._tab_ids:
+            return
+        tabs = self.query_one(TabbedContent)
+        active = tabs.active
+        try:
+            i = self._tab_ids.index(active)
+        except ValueError:
+            i = -1
+        next_idx = (i + 1) % len(self._tab_ids)
+        tabs.active = self._tab_ids[next_idx]
+
+    def tab_prev(self) -> None:
+        if not self._tab_ids:
+            return
+        tabs = self.query_one(TabbedContent)
+        active = tabs.active
+        try:
+            i = self._tab_ids.index(active)
+        except ValueError:
+            i = 0
+        prev_idx = (i - 1) % len(self._tab_ids)
+        tabs.active = self._tab_ids[prev_idx]
 
     def save_active(self) -> bool:
         editor = self.get_active_editor()
-        if editor and editor.file_path:
+        if not editor or not editor.file_path:
+            return False
+        try:
             result = editor.save_file()
-            if result:
-                self.post_message(self.FileSaved(editor.file_path))
-            return result
-        return False
+        except OSError as exc:
+            self.notify(f"Cannot save: {exc}", severity="error", timeout=5)
+            return False
+        if result:
+            self._sync_buffer_index()
+            buf = self.buffers.active_buffer
+            if buf:
+                buf.mark_saved()
+        return result
 
     def close_active(self) -> None:
         tabs = self.query_one(TabbedContent)
         active = tabs.active
         if active in ("", "tab_untitled", None):
             return
-        tabs.remove_pane(active)
-        self._open_tabs.discard(active)
+        name = active.removeprefix("tab_")
         self.buffers.close_active()
+        tabs.remove_pane(active)
+        self._tab_ids.remove(active)
+        self._editors.pop(name, None)
+
+    def on_text_area_changed(self, event: EnhancedCodeEditor.Changed) -> None:
+        event.stop()
+        self._sync_buffer_index()
+        buf = self.buffers.active_buffer
+        if buf and not buf.is_modified:
+            buf.mark_modified()

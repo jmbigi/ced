@@ -5,6 +5,7 @@ src/ced/__init__.py
 src/ced/__main__.py
 src/ced/app.py
 src/ced/config.py
+src/ced/types.py
 src/ced.egg-info/PKG-INFO
 src/ced.egg-info/SOURCES.txt
 src/ced.egg-info/dependency_links.txt
@@ -28,7 +29,15 @@ src/ced/panels/opencode_panel.py
 src/ced/panels/palette.py
 src/ced/panels/quick_open.py
 src/ced/panels/search_bar.py
-src/ced/panels/status_bar.py
 src/ced/themes/__init__.py
 src/ced/themes/manager.py
-src/ced/utils/__init__.py
+tests/test_buffer.py
+tests/test_commands.py
+tests/test_config.py
+tests/test_file_tree.py
+tests/test_keybindings.py
+tests/test_language.py
+tests/test_panels.py
+tests/test_themes.py
+tests/test_types.py
+tests/test_widget.py

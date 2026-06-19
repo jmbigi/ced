@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from typing import Literal
-
-ThemeMode = Literal["auto", "dark", "light"]
+import os
 
 THEMES: dict[str, dict[str, str]] = {
     "monokai": {
@@ -86,8 +84,6 @@ def list_themes() -> list[str]:
 
 def detect_dark_mode() -> bool:
     try:
-        import os
-
         if os.name == "nt":
             import winreg
 

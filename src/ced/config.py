@@ -1,15 +1,23 @@
-﻿from __future__ import annotations
-from pathlib import Path
-from dataclasses import dataclass, field
-from typing import Literal
+from __future__ import annotations
 
-KeybindingPreset = Literal["vscode", "nano", "sublime", "emacs"]
+import tomllib
+from dataclasses import dataclass, field
+from pathlib import Path
+
+from ced.types import KeybindingPreset, ThemeMode
+
+VALID_THEME_MODES: set[str] = {"auto", "dark", "light"}
+VALID_KEYBINDING_PRESETS: set[str] = {"vscode", "nano", "sublime", "emacs"}
 
 
 @dataclass
 class ThemeConfig:
-    mode: Literal["auto", "dark", "light"] = "auto"
+    mode: ThemeMode = "auto"
     name: str = "monokai"
+
+    def __post_init__(self) -> None:
+        if self.mode not in VALID_THEME_MODES:
+            raise ValueError(f"Invalid theme mode: {self.mode!r}")
 
 
 @dataclass
@@ -25,6 +33,10 @@ class EditorConfig:
 @dataclass
 class KeybindingConfig:
     preset: KeybindingPreset = "vscode"
+
+    def __post_init__(self) -> None:
+        if self.preset not in VALID_KEYBINDING_PRESETS:
+            raise ValueError(f"Invalid keybinding preset: {self.preset!r}")
 
 
 @dataclass
@@ -50,8 +62,6 @@ class Config:
         for p in paths:
             if p.exists():
                 with p.open("rb") as f:
-                    import tomllib
-
                     data = tomllib.load(f)
                 cfg._merge(data)
         return cfg
@@ -61,6 +71,8 @@ class Config:
             for k, v in data["theme"].items():
                 if hasattr(self.theme, k):
                     setattr(self.theme, k, v)
+        if self.theme.mode not in VALID_THEME_MODES:
+            self.theme.mode = "auto"
         if "editor" in data:
             for k, v in data["editor"].items():
                 if hasattr(self.editor, k):
@@ -69,6 +81,8 @@ class Config:
             for k, v in data["keybindings"].items():
                 if hasattr(self.keybindings, k):
                     setattr(self.keybindings, k, v)
+        if self.keybindings.preset not in VALID_KEYBINDING_PRESETS:
+            self.keybindings.preset = "vscode"
         if "opencode" in data:
             for k, v in data["opencode"].items():
                 if hasattr(self.opencode, k):

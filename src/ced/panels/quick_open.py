@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
+from textual import work
 from textual.app import ComposeResult
 from textual.screen import ModalScreen
 from textual.widgets import Input, ListView, ListItem, Label
@@ -53,22 +55,26 @@ class QuickOpen(ModalScreen[Path | None]):
 
     def on_mount(self) -> None:
         self._scan_files()
-        self._populate(self._all_files)
         self.query_one("#quick-input", Input).focus()
 
+    @work(thread=True, exclusive=True)
     def _scan_files(self) -> None:
-        import os
-
         excluded = {".venv", "__pycache__", ".git", "node_modules", ".ced"}
+        files: list[Path] = []
         for dirpath, dirnames, filenames in os.walk(self._root):
             dirnames[:] = [d for d in dirnames if d not in excluded]
             for fn in filenames:
                 full = Path(dirpath) / fn
                 try:
                     if full.is_file():
-                        self._all_files.append(full)
+                        files.append(full)
                 except (PermissionError, OSError):
                     pass
+        self.app.call_from_thread(self._on_files_scanned, files)
+
+    def _on_files_scanned(self, files: list[Path]) -> None:
+        self._all_files = files
+        self._populate(files)
 
     def _populate(self, files: list[Path]) -> None:
         list_view = self.query_one("#quick-list", ListView)

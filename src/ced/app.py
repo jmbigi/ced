@@ -1,31 +1,40 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import ClassVar
 
 from textual.app import App, ComposeResult
-from textual.binding import Binding
-from textual.widgets import Header, Input
+from textual.binding import Binding, BindingsMap
+from textual.widgets import Input
 from textual.containers import Horizontal, Vertical
 
 from ced.config import Config
 from ced.commands import CommandRegistry, Command
 from ced.panels.file_tree import FileTreePanel
-from ced.panels.editor_area import EditorArea
+from ced.panels.editor_area import EditorArea, EditorSettings
 from ced.panels.opencode_panel import OpenCodePanel
 from ced.panels.help_bar import HelpBar
 from ced.panels.palette import CommandPalette
 from ced.panels.quick_open import QuickOpen
 from ced.panels.search_bar import SearchBar
 from ced.panels.jump import JumpMode
+from textual.theme import Theme
+
+from ced.keybindings.manager import KeybindingManager
+from ced.keybindings.presets import list_presets as list_keybinding_presets
+from ced.types import ThemeMode
 from ced.themes.manager import (
-    ThemeMode,
     list_themes,
     detect_dark_mode,
+    get_theme_variables,
 )
 
 
 class Ced(App):
+    TITLE = "ced"
+    SUB_TITLE = "Terminal Code Editor"
+
     CSS_PATH = "theme.tcss"
 
     BINDINGS: ClassVar[list[Binding]] = [
@@ -42,12 +51,16 @@ class Ced(App):
         Binding("ctrl+tab", "next_tab", "Next Tab"),
         Binding("ctrl+shift+tab", "prev_tab", "Prev Tab"),
         Binding("ctrl+j", "jump_mode", "Jump"),
+        Binding("ctrl+z", "undo", "Undo"),
+        Binding("ctrl+y", "redo", "Redo"),
     ]
 
     def __init__(self) -> None:
         super().__init__()
         self.config = Config.load()
         self.commands = CommandRegistry()
+        self._keybinding_manager = KeybindingManager(self.config.keybindings.preset)
+        self._apply_keybindings()
         self._register_builtin_commands()
 
     def _register_builtin_commands(self) -> None:
@@ -114,27 +127,95 @@ class Ced(App):
             Command(
                 "app.help", "Show help / command palette", self.action_help, "Help"
             ),
+            Command(
+                "app.keybinding_next",
+                "Switch to next keybinding preset",
+                self.action_keybinding_next,
+                "Preferences",
+            ),
+            Command(
+                "app.keybinding_list",
+                "List available keybinding presets",
+                self.action_keybinding_list,
+                "Preferences",
+            ),
+            Command("app.undo", "Undo last change", self.action_undo, "Edit"),
+            Command("app.redo", "Redo last undone change", self.action_redo, "Edit"),
         )
 
     def compose(self) -> ComposeResult:
-        yield Header()
         with Horizontal():
             with Vertical(id="sidebar"):
                 yield FileTreePanel(id="file-tree")
             with Vertical(id="editor-area"):
-                yield EditorArea(id="editor")
+                yield EditorArea(
+                    editor_settings=EditorSettings(
+                        show_line_numbers=self.config.editor.line_numbers,
+                        soft_wrap=self.config.editor.soft_wrap,
+                        indent_width=self.config.editor.tab_size,
+                    ),
+                    id="editor",
+                )
                 yield SearchBar(id="search-bar")
             with Vertical(id="opencode-panel"):
-                yield OpenCodePanel(id="opencode")
+                yield OpenCodePanel(
+                    opencode_path=self.config.opencode.path,
+                    auto_start=self.config.opencode.auto_start,
+                    id="opencode",
+                )
         yield HelpBar(id="help-bar")
+
+    def _update_help_bar(self) -> None:
+        key_map = {
+            "ctrl+q": "^Q", "ctrl+s": "^S", "ctrl+p": "^P", "ctrl+f": "^F",
+            "ctrl+b": "^B", "ctrl+n": "^N", "ctrl+w": "^W", "ctrl+h": "^H",
+            "ctrl+j": "^J", "ctrl+o": "^O", "ctrl+x": "^X", "ctrl+g": "^G",
+            "ctrl+z": "^Z", "ctrl+y": "^Y",
+            "ctrl+grave_accent": "GRV", "ctrl+shift+tab": "S-TAB",
+            "ctrl+tab": "TAB", "ctrl+shift+p": "S-P",
+            "ctrl+shift+f": "S-F", "ctrl+x ctrl+s": "C-x C-s",
+            "ctrl+x ctrl+f": "C-x C-f", "ctrl+x ctrl+c": "C-x C-c",
+        }
+        shortcuts = []
+        seen = set()
+        for b in self._keybinding_manager.bindings:
+            if b.action in seen or b.action.endswith(("_list", "_next")):
+                continue
+            seen.add(b.action)
+            display = key_map.get(b.key, b.key.upper().replace("control", "C"))
+            shortcuts.append((display, b.description))
+        self.query_one("#help-bar", HelpBar).set_shortcuts(shortcuts)
+
+    def _apply_keybindings(self) -> None:
+        self.__class__._merged_bindings = BindingsMap(self._keybinding_manager.bindings)
+        if self._is_mounted:
+            self.refresh_bindings()
 
     def on_mount(self) -> None:
         self._apply_theme()
+        self._update_help_bar()
 
     def _apply_theme(self) -> None:
         mode: ThemeMode = self.config.theme.mode
         is_dark = detect_dark_mode() if mode == "auto" else mode == "dark"
         self.dark = is_dark
+        theme_vars = get_theme_variables(self.config.theme.name)
+        theme = Theme(
+            name=self.config.theme.name,
+            primary=theme_vars["primary"],
+            secondary=theme_vars["secondary"],
+            accent=theme_vars["accent"],
+            foreground=theme_vars["text"],
+            surface=theme_vars["surface"],
+            boost=theme_vars["boost"],
+            warning=theme_vars["warning"],
+            error=theme_vars["error"],
+            success=theme_vars["success"],
+            text_muted=theme_vars["text-muted"],
+            dark=is_dark,
+        )
+        self.register_theme(theme)
+        self.theme = self.config.theme.name
 
     def on_file_tree_panel_file_opened(self, event: FileTreePanel.FileOpened) -> None:
         editor = self.query_one("#editor", EditorArea)
@@ -151,10 +232,19 @@ class Ced(App):
 
     def action_save(self) -> None:
         editor = self.query_one("#editor", EditorArea)
-        editor.save_active()
+        if not editor.save_active():
+            self.notify("Cannot save: file has no path", severity="warning", timeout=5)
 
-    def action_close_tab(self) -> None:
+    async def action_close_tab(self) -> None:
         editor = self.query_one("#editor", EditorArea)
+        buf = editor.buffers.active_buffer
+        if buf and buf.is_modified:
+            result = await self.confirm(
+                f"'{buf.name}' has unsaved changes. Close anyway?",
+                title="Unsaved Changes",
+            )
+            if not result:
+                return
         editor.close_active()
 
     def action_open_file(self) -> None:
@@ -162,15 +252,27 @@ class Ced(App):
 
     def action_new_file(self) -> None:
         editor = self.query_one("#editor", EditorArea)
-        editor.open_file(Path("untitled"))
+        editor.new_file()
 
     def action_next_tab(self) -> None:
         editor = self.query_one("#editor", EditorArea)
-        editor.buffers.switch_next()
+        editor.tab_next()
 
     def action_prev_tab(self) -> None:
         editor = self.query_one("#editor", EditorArea)
-        editor.buffers.switch_prev()
+        editor.tab_prev()
+
+    def action_undo(self) -> None:
+        editor = self.query_one("#editor", EditorArea)
+        active = editor.get_active_editor()
+        if active:
+            active.undo()
+
+    def action_redo(self) -> None:
+        editor = self.query_one("#editor", EditorArea)
+        active = editor.get_active_editor()
+        if active:
+            active.redo()
 
     def action_command_palette(self) -> None:
         commands = [(cmd.id, cmd.name, cmd.category) for cmd in self.commands.all()]
@@ -188,6 +290,40 @@ class Ced(App):
             editor = self.query_one("#editor", EditorArea)
             editor.open_file(path)
 
+    def on_search_bar_search_requested(
+        self, event: SearchBar.SearchRequested
+    ) -> None:
+        event.stop()
+        editor = self.query_one("#editor", EditorArea)
+        active = editor.get_active_editor()
+        if active and event.query:
+            text = active.text.lower()
+            idx = text.find(event.query.lower())
+            if idx >= 0:
+                line = text[:idx].count("\n")
+                col = idx - text[:idx].rfind("\n") - 1
+                active.cursor_location = (line, col)
+
+    def on_search_bar_replace_requested(
+        self, event: SearchBar.ReplaceRequested
+    ) -> None:
+        event.stop()
+        editor = self.query_one("#editor", EditorArea)
+        active = editor.get_active_editor()
+        if active and event.find:
+            if event.all:
+                pattern = re.compile(re.escape(event.find), re.IGNORECASE)
+                active.text = pattern.sub(event.replace, active.text)
+            else:
+                idx = active.text.lower().find(event.find.lower())
+                if idx >= 0:
+                    before = active.text[:idx]
+                    after = active.text[idx + len(event.find):]
+                    active.text = before + event.replace + after
+                    line = before.count("\n")
+                    col = idx - before.rfind("\n") - 1
+                    active.cursor_location = (line, col + len(event.replace))
+
     def action_search(self) -> None:
         search_bar = self.query_one("#search-bar", SearchBar)
         search_bar.display = not search_bar.display
@@ -197,11 +333,7 @@ class Ced(App):
     def action_search_replace(self) -> None:
         search_bar = self.query_one("#search-bar", SearchBar)
         search_bar.display = True
-        search_bar._show_replace = True
-        row = search_bar.query_one("#replace-row")
-        row.display = True
-        toggle = search_bar.query_one("#toggle-replace")
-        toggle.label = "△"
+        search_bar.show_replace_ui(True)
         search_bar.query_one("#find-input").focus()
 
     def action_jump_mode(self) -> None:
@@ -229,11 +361,38 @@ class Ced(App):
             i = -1
         next_theme = themes[(i + 1) % len(themes)]
         self.config.theme.name = next_theme
+        self._apply_theme()
         self.notify(f"Theme: {next_theme}")
 
     def action_theme_list(self) -> None:
         themes = ", ".join(list_themes())
         self.notify(f"Themes: {themes}", timeout=5)
 
+    def action_keybinding_next(self) -> None:
+        presets = list_keybinding_presets()
+        current = self._keybinding_manager.current_preset
+        try:
+            i = presets.index(current)
+        except ValueError:
+            i = -1
+        next_preset = presets[(i + 1) % len(presets)]
+        self._keybinding_manager.set_preset(next_preset)
+        self.config.keybindings.preset = next_preset
+        self._apply_keybindings()
+        self._update_help_bar()
+        self.notify(f"Keybindings: {next_preset}")
+
+    def action_keybinding_list(self) -> None:
+        presets = ", ".join(list_keybinding_presets())
+        self.notify(f"Presets: {presets}", timeout=5)
+
     def action_help(self) -> None:
-        self.action_command_palette()
+        shortcuts = "\n".join(
+            f"  {b.key}  {b.description}"
+            for b in self._keybinding_manager.bindings
+            if not b.action.endswith("_list") and not b.action.endswith("_next")
+        )
+        self.notify(
+            f"[bold]ced keybindings:[/bold]\n{shortcuts}",
+            timeout=10,
+        )

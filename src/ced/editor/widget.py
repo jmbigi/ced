@@ -19,8 +19,12 @@ LANGUAGE_MAP: dict[str, str] = {
     ".php": "php",
     ".c": "c",
     ".h": "c",
+    ".hxx": "cpp",
     ".cpp": "cpp",
     ".hpp": "cpp",
+    ".cc": "cpp",
+    ".cxx": "cpp",
+    ".hh": "cpp",
     ".cs": "csharp",
     ".html": "html",
     ".css": "css",
@@ -53,6 +57,31 @@ LANGUAGE_MAP: dict[str, str] = {
     ".vue": "vue",
     ".svelte": "svelte",
     ".astro": "astro",
+    ".zig": "zig",
+    ".nim": "nim",
+    ".ex": "elixir",
+    ".exs": "elixir",
+    ".erl": "erlang",
+    ".hrl": "erlang",
+    ".clj": "clojure",
+    ".cljs": "clojure",
+    ".edn": "clojure",
+    ".hs": "haskell",
+    ".lhs": "haskell",
+    ".ml": "ocaml",
+    ".mli": "ocaml",
+    ".fs": "fsharp",
+    ".fsx": "fsharp",
+    ".scala": "scala",
+    ".sc": "scala",
+    ".dart": "dart",
+    ".coffee": "coffeescript",
+    ".groovy": "groovy",
+    ".gradle": "groovy",
+    ".jl": "julia",
+    ".cr": "crystal",
+    ".mak": "makefile",
+    ".cmake": "cmake",
 }
 
 
@@ -67,6 +96,9 @@ class EnhancedCodeEditor(TextArea):
     def __init__(
         self,
         path: Path | str | None = None,
+        show_line_numbers: bool = True,
+        soft_wrap: bool = False,
+        indent_width: int = 4,
         *args,
         **kwargs,
     ) -> None:
@@ -76,9 +108,10 @@ class EnhancedCodeEditor(TextArea):
             *args,
             **kwargs,
             language=language,
-            show_line_numbers=True,
-            soft_wrap=False,
+            show_line_numbers=show_line_numbers,
+            soft_wrap=soft_wrap,
         )
+        self.indent_width = indent_width
 
     @property
     def file_path(self) -> Path | None:
