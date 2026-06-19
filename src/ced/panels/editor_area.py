@@ -172,6 +172,18 @@ class EditorArea(Widget):
         prev_idx = (i - 1) % len(self._tab_ids)
         tabs.active = self._tab_ids[prev_idx]
 
+    def save_all_modified(self) -> None:
+        for i, buf in enumerate(self.buffers):
+            if buf.is_modified and i < len(self._tab_ids):
+                name = self._tab_ids[i].removeprefix("tab_")
+                ed = self._editors.get(name)
+                if ed and ed.file_path:
+                    try:
+                        ed.save_file()
+                        buf.mark_saved()
+                    except OSError:
+                        pass
+
     def save_active(self) -> bool:
         editor = self.get_active_editor()
         if not editor or not editor.file_path:

@@ -21,6 +21,7 @@ src/ced/keybindings/__init__.py
 src/ced/keybindings/manager.py
 src/ced/keybindings/presets.py
 src/ced/panels/__init__.py
+src/ced/panels/confirm.py
 src/ced/panels/editor_area.py
 src/ced/panels/file_tree.py
 src/ced/panels/help_bar.py
@@ -29,6 +30,7 @@ src/ced/panels/opencode_panel.py
 src/ced/panels/palette.py
 src/ced/panels/quick_open.py
 src/ced/panels/search_bar.py
+src/ced/panels/terminal.py
 src/ced/themes/__init__.py
 src/ced/themes/manager.py
 tests/test_actions_mocked.py
@@ -38,9 +40,11 @@ tests/test_buffer.py
 tests/test_commands.py
 tests/test_config.py
 tests/test_edge_cases.py
+tests/test_file_io_evidence.py
 tests/test_file_tree.py
 tests/test_final_coverage.py
 tests/test_help_bar.py
+tests/test_hola_mundo.py
 tests/test_hypothesis.py
 tests/test_init.py
 tests/test_integration.py
@@ -52,7 +56,14 @@ tests/test_panels.py
 tests/test_pilot_full.py
 tests/test_pilot_screens.py
 tests/test_pilot_search.py
+tests/test_screen_capture.py
+tests/test_terminal.py
 tests/test_themes.py
 tests/test_themes_detect.py
 tests/test_types.py
+tests/test_ui_audit.py
+tests/test_ux_emulation.py
+tests/test_vision.py
+tests/test_vision_ocr.py
+tests/test_visual_png.py
 tests/test_widget.py

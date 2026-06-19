@@ -47,12 +47,6 @@ class OpenCodePanel(Widget):
             padding: 0 2;
         }
     }
-
-    OpenCodePanel Input:focus {
-        border: tall $primary;
-        background: $surface;
-        color: $foreground;
-    }
     """
 
     def __init__(

@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import asyncio
 import re
+import signal
+import sys
 from pathlib import Path
 from typing import ClassVar
 
@@ -21,7 +24,7 @@ from ced.panels.search_bar import SearchBar
 
 from ced.panels.jump import JumpMode
 from ced.panels.terminal import TerminalPanel
-from ced.panels.confirm import ConfirmScreen
+from ced.panels.confirm import ConfirmScreen, QuitConfirmScreen
 
 from textual.theme import Theme
 
@@ -221,6 +224,12 @@ class Ced(App):
     def on_mount(self) -> None:
         self._apply_theme()
         self._update_help_bar()
+        if sys.platform != "win32":
+            try:
+                loop = asyncio.get_running_loop()
+                loop.add_signal_handler(signal.SIGHUP, self.emergency_save_and_exit)
+            except (ValueError, NotImplementedError):
+                pass
 
     def _apply_theme(self) -> None:
         mode: ThemeMode = self.config.theme.mode
@@ -233,13 +242,19 @@ class Ced(App):
             secondary=theme_vars["secondary"],
             accent=theme_vars["accent"],
             foreground=theme_vars["text"],
+            background=theme_vars["surface"],
             surface=theme_vars["surface"],
             boost=theme_vars["boost"],
             warning=theme_vars["warning"],
             error=theme_vars["error"],
             success=theme_vars["success"],
             dark=is_dark,
-            variables={"text-muted": theme_vars["text-muted"]},
+            variables={
+                "text-muted": theme_vars["text-muted"],
+                "input-cursor-background": theme_vars["primary"],
+                "input-cursor-foreground": theme_vars["surface"],
+                "input-cursor-text-style": "reverse",
+            },
         )
         self.register_theme(theme)
         self.theme = self.config.theme.name
@@ -248,6 +263,52 @@ class Ced(App):
         editor = self.query_one("#editor", EditorArea)
         editor.open_file(event.path)
         event.stop()
+
+    def action_quit(self) -> None:
+        editor = self.query_one("#editor", EditorArea)
+        modified = [buf for buf in editor.buffers if buf.is_modified]
+        if not modified:
+            self.exit()
+            return
+
+        names = [buf.name for buf in modified]
+
+        def _on_quit(result: str | None) -> None:
+            if result == "save":
+                editor.save_all_modified()
+                self.exit()
+            elif result == "discard":
+                self.exit()
+
+        self.push_screen(QuitConfirmScreen(names), _on_quit)
+
+    def emergency_save_and_exit(self) -> None:
+        editor = self.query_one("#editor", EditorArea)
+        recovery_dir = Path.home() / ".local" / "share" / "ced" / "recovery"
+        recovery_dir.mkdir(parents=True, exist_ok=True)
+        for i, buf in enumerate(editor.buffers):
+            if not buf.is_modified:
+                continue
+            if i >= len(editor._tab_ids):
+                continue
+            name = editor._tab_ids[i].removeprefix("tab_")
+            ed = editor._editors.get(name)
+            if ed is None:
+                continue
+            if ed.file_path:
+                try:
+                    ed.save_file()
+                    buf.mark_saved()
+                except OSError:
+                    pass
+            else:
+                try:
+                    (recovery_dir / f"{name}.txt").write_text(
+                        ed.text, encoding="utf-8"
+                    )
+                except OSError:
+                    pass
+        self.exit()
 
     def action_toggle_sidebar(self) -> None:
         self.query_one("#sidebar").display ^= True

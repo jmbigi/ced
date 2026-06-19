@@ -63,11 +63,6 @@ OpenCodePanel RichLog {
     height: 1fr;
 }
 
-OpenCodePanel Input {
-    dock: bottom;
-    height: 1;
-    margin: 0 1 1 1;
-}
 
 #search-bar {
     dock: top;

@@ -50,3 +50,48 @@ class ConfirmScreen(ModalScreen[bool]):
             self.dismiss(True)
         else:
             self.dismiss(False)
+
+
+class QuitConfirmScreen(ModalScreen[str]):
+    DEFAULT_CSS = """
+    QuitConfirmScreen {
+        align: center middle;
+    }
+    QuitConfirmScreen > #dialog {
+        width: 50;
+        padding: 1 2;
+        border: thick $primary;
+        background: $surface;
+    }
+    QuitConfirmScreen #message {
+        margin: 1 0 1 0;
+        text-align: center;
+    }
+    QuitConfirmScreen Label {
+        margin: 0 1;
+    }
+    QuitConfirmScreen #buttons {
+        align: center middle;
+        margin-top: 1;
+    }
+    QuitConfirmScreen Button {
+        margin: 0 1;
+    }
+    """
+
+    def __init__(self, files: list[str]) -> None:
+        super().__init__()
+        self._files = files
+
+    def compose(self) -> ComposeResult:
+        with Vertical(id="dialog"):
+            yield Label("You have unsaved changes:", id="message")
+            for f in self._files:
+                yield Label(f"  \u2022 {f}")
+            with Horizontal(id="buttons"):
+                yield Button("Save & Quit", id="save", variant="primary")
+                yield Button("Discard & Quit", id="discard", variant="error")
+                yield Button("Cancel", id="cancel", variant="default")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        self.dismiss(event.button.id)
