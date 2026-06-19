@@ -46,10 +46,11 @@ REQUIRED_TOOLS["xdotool"] = (
 )
 
 _HAVE_DISPLAY = bool(os.environ.get("DISPLAY"))
+_REAL_DISPLAY = os.environ.get("DISPLAY") == ":0"  # real desktop, not Xvfb
 
 requires_screen_capture = pytest.mark.skipif(
-    not _HAVE_DISPLAY or not REQUIRED_TOOLS["pyautogui"],
-    reason="Requires X11 display and pyautogui",
+    not _HAVE_DISPLAY or not REQUIRED_TOOLS["pyautogui"] or _REAL_DISPLAY,
+    reason="Requires isolated X11 display (Xvfb) and pyautogui",
 )
 
 requires_ocr = pytest.mark.skipif(

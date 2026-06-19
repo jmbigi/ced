@@ -32,7 +32,8 @@ def _launch_ced(display: str) -> subprocess.Popen:
     env = {**os.environ, "DISPLAY": display}
     env.pop("QT_QPA_PLATFORM_PLUGIN_PATH", None)
     return subprocess.Popen(
-        [TERMINAL, "--noclose", "-e", "python3 -m ced"],
+        [TERMINAL, "--noclose", "--hide-menubar", "--hide-tabbar",
+         "-e", "python3 -m ced"],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
         env=env,
