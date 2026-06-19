@@ -28,6 +28,7 @@ markers = [
     "sandbox: test uses sandboxed temporary files",
     "snapshot: test uses visual snapshot comparison",
     "visual: test uses Xvfb + pyautogui for PNG screenshot capture",
+    "debug_ui_events: test uses UI event observability (RR-81)",
 ]
 
 [tool.coverage.run]

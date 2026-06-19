@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import io
 import re
+import time
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from rich.text import Text
 from textual.widgets import TextArea
@@ -12,6 +13,8 @@ if TYPE_CHECKING:
     from textual.app import App
     from textual.pilot import Pilot
     from textual.widget import Widget
+
+    from tests.debug_ui_events import DebugUIEventHandler
 
 
 # ---------------------------------------------------------------------------
@@ -236,3 +239,104 @@ async def press_keys(pilot: Pilot, *keys: str) -> None:
     """Simulate pressing a sequence of keys."""
     for key in keys:
         await pilot.press(key)
+
+
+# ---------------------------------------------------------------------------
+# UI event observability — debug wrappers for debug_ui_events (RR-81)
+# ---------------------------------------------------------------------------
+
+
+async def debug_type_text(
+    pilot: Pilot,
+    text: str,
+    handler: DebugUIEventHandler | None = None,
+) -> None:
+    """Type text with optional debug event capture."""
+    for ch in text:
+        if handler:
+            handler.key_press(ch)
+        await pilot.press(ch)
+
+
+async def debug_press_keys(
+    pilot: Pilot,
+    *keys: str,
+    handler: DebugUIEventHandler | None = None,
+) -> None:
+    """Press keys with optional debug event capture."""
+    for key in keys:
+        if handler:
+            handler.key_press(key)
+        await pilot.press(key)
+
+
+def debug_screenshot(
+    app: App,
+    handler: DebugUIEventHandler | None = None,
+    png_path: str | Path | None = None,
+) -> bytes | None:
+    """Capture a PNG screenshot with optional debug event logging."""
+    from tests.helpers import capture_png
+
+    t0 = time.time()
+    png = capture_png(app)
+    elapsed = time.time() - t0
+    if handler and png:
+        handler.screenshot(png_path or "/tmp/debug_screenshot.png")
+    return png
+
+
+def widget_tree_dump(app: App) -> str:
+    """Serializar el árbol completo de widgets a texto."""
+    lines: list[str] = [f"Screen: {app.screen.__class__.__name__} "
+                        f"[{app.size.width}x{app.size.height}]"]
+
+    def _walk(w: Any, depth: int = 0) -> None:
+        indent = "  " * depth
+        info = f"{w.__class__.__name__}"
+        if w.id:
+            info += f" #{w.id}"
+        classes = getattr(w, "classes", set())
+        if classes:
+            info += f" classes={{{','.join(sorted(classes))}}}"
+        pseudo = getattr(w, "pseudo_classes", set())
+        if pseudo:
+            info += f" pseudo={{{','.join(sorted(pseudo))}}}"
+        display = getattr(w, "display", True)
+        if not display:
+            info += " hidden"
+        try:
+            region = w.region
+            info += f" [{region.width}x{region.height}]"
+        except Exception:
+            pass
+        try:
+            text = _extract_short_text(w)
+            if text:
+                info += f" = {text!r}"
+        except Exception:
+            pass
+        lines.append(f"{indent}{info}")
+        try:
+            for child in w.children:
+                _walk(child, depth + 1)
+        except Exception:
+            pass
+
+    def _extract_short_text(w: Any) -> str:
+        from textual.widgets import TextArea
+        if isinstance(w, TextArea):
+            return w.text[:60]
+        try:
+            rendered = w.render()
+            from rich.text import Text as RichText
+            rt = RichText.from_ansi(str(rendered))
+            return rt.plain[:60]
+        except Exception:
+            return ""
+
+    try:
+        _walk(app.screen)
+    except Exception:
+        pass
+    return "\n".join(lines)
