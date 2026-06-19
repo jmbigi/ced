@@ -82,6 +82,7 @@ class EditorArea(Widget):
         tabs.active = tab_id
         self._editors[safe_key] = editor
         self._tab_ids.append(tab_id)
+        editor.focus()
 
     def open_file(self, path: Path) -> None:
         existing = self.buffers.get_by_path(path)
@@ -121,6 +122,7 @@ class EditorArea(Widget):
         tabs.active = tab_id
         self._editors[safe_key] = editor
         self._tab_ids.append(tab_id)
+        editor.focus()
 
     def get_active_editor(self) -> EnhancedCodeEditor | None:
         tabs = self.query_one(TabbedContent)

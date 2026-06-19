@@ -21,6 +21,7 @@ from ced.panels.search_bar import SearchBar
 
 from ced.panels.jump import JumpMode
 from ced.panels.terminal import TerminalPanel
+from ced.panels.confirm import ConfirmScreen
 from textual.theme import Theme
 
 from ced.keybindings.manager import KeybindingManager
@@ -264,6 +265,9 @@ class Ced(App):
         editor = self.query_one("#editor", EditorArea)
         if not editor.save_active():
             self.notify("Cannot save: file has no path", severity="warning", timeout=5)
+
+    async def confirm(self, message: str, title: str = "Confirm") -> bool:
+        return await self.push_screen_wait(ConfirmScreen(message, title=title))
 
     async def action_close_tab(self) -> None:
         editor = self.query_one("#editor", EditorArea)
