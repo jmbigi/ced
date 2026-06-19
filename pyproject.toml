@@ -24,6 +24,10 @@ ignore = ["E501"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+markers = [
+    "sandbox: test uses sandboxed temporary files",
+    "snapshot: test uses visual snapshot comparison",
+]
 
 [tool.coverage.run]
 source = ["src/ced"]

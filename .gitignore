@@ -16,3 +16,5 @@ CED-CODING-STANDARDS.md
 dist/
 build/
 .coverage
+__snapshots__/
+snapshots/
