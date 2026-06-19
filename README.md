@@ -6,7 +6,7 @@
 
 - **Non-modal** — never forced into vim modes. Every action is one Ctrl+ key away or visible in the help bar.
 - **VS Code spirit, terminal form** — file tree sidebar, editor tabs, command palette, quick open, multi-keybinding presets.
-- **Plug and play** — `pip install ced` + `ced` opens an editor. No configuration required.
+- **Plug and play** — `pip install .` + `ced` opens an editor. No configuration required.
 - **AI-ready** — the OpenCode panel is designed for integrated AI assistance via the OpenCode CLI.
 - **Safe, modern, advanced, robust** — editing modes that protect your data, resist crashes, and provide a smooth, professional editing experience in any terminal environment.
 
@@ -175,7 +175,6 @@ src/ced/
 ## Tech Stack
 - **Python** 3.11+
 - **Textual** 8.x — terminal UI framework
-- **Rich** — terminal formatting
 - **tree-sitter** (via Textual) — syntax highlighting
 - **tomllib** (stdlib) — config parsing
 - **OpenCode** CLI (optional) — AI integration

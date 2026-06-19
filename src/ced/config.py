@@ -29,6 +29,12 @@ class EditorConfig:
     font_size: int = 12
     show_minimap: bool = False
 
+    def __post_init__(self) -> None:
+        if self.tab_size < 1:
+            self.tab_size = 4
+        if self.font_size < 8:
+            self.font_size = 12
+
 
 @dataclass
 class KeybindingConfig:
@@ -43,6 +49,10 @@ class KeybindingConfig:
 class OpenCodeConfig:
     path: str = "opencode"
     auto_start: bool = True
+
+    def __post_init__(self) -> None:
+        if not self.path:
+            self.path = "opencode"
 
 
 @dataclass

@@ -6,6 +6,10 @@ import pytest
 
 from ced.editor.widget import EnhancedCodeEditor, detect_language
 
+# These tests construct EnhancedCodeEditor without mounting in a Textual app.
+# They verify logic that is independent of the UI event loop.
+
+
 
 class TestEnhancedCodeEditor:
     def test_default_constructor(self) -> None:
@@ -72,3 +76,17 @@ class TestEnhancedCodeEditor:
     def test_indent_width_custom(self) -> None:
         editor = EnhancedCodeEditor(indent_width=2)
         assert editor.indent_width == 2
+
+    def test_save_as_writes_file(self, tmp_path: Path) -> None:
+        dest = tmp_path / "saved.txt"
+        editor = EnhancedCodeEditor()
+        editor.text = "hello world"
+        editor.save_as(dest)
+        assert dest.read_text() == "hello world"
+        assert editor.file_path == dest
+
+    def test_save_as_updates_language(self, tmp_path: Path) -> None:
+        dest = tmp_path / "script.py"
+        editor = EnhancedCodeEditor()
+        editor.save_as(dest)
+        assert editor.language == "python"

@@ -1,7 +1,7 @@
 from ced.app import Ced
 
 
-def main():
+def main() -> None:
     app = Ced()
     app.run()
 

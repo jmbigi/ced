@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ced.config import Config, ThemeConfig, KeybindingConfig
+from ced.config import Config, EditorConfig, OpenCodeConfig, ThemeConfig, KeybindingConfig
 
 
 def test_config_defaults() -> None:
@@ -106,3 +106,23 @@ def test_config_load_from_file(tmp_path: Path) -> None:
 def test_config_load_without_file() -> None:
     cfg = Config.load()
     assert isinstance(cfg, Config)
+
+
+def test_editor_config_invalid_tab_size_negative() -> None:
+    cfg = EditorConfig(tab_size=-1)
+    assert cfg.tab_size == 4
+
+
+def test_editor_config_invalid_tab_size_zero() -> None:
+    cfg = EditorConfig(tab_size=0)
+    assert cfg.tab_size == 4
+
+
+def test_editor_config_invalid_font_size() -> None:
+    cfg = EditorConfig(font_size=1)
+    assert cfg.font_size == 12
+
+
+def test_opencode_config_empty_path() -> None:
+    cfg = OpenCodeConfig(path="")
+    assert cfg.path == "opencode"
