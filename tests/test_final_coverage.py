@@ -57,35 +57,26 @@ def test_app_help_bar_dedup_continue() -> None:
 
 # ── quick_open.py:71-72 — except (PermissionError, OSError) in worker ───
 
-def test_quick_open_permission_error_direct() -> None:
-    """Cover quick_open.py:71-72 by creating a real restricted file."""
-    import os as _os
+def test_quick_open_permission_error_inner() -> None:
+    """Cover quick_open.py:71-72 via _scan_files_inner (no @work wrapper)."""
     from ced.panels.quick_open import QuickOpen
+    import os as _os
 
-    # Create a directory with a restricted file
-    tmp = Path("/tmp/_ced_qo_test")
-    tmp.mkdir(parents=True, exist_ok=True)
-    restricted = tmp / "secret.py"
-    restricted.write_text("data")
-    restricted.chmod(0o000)
+    qo = QuickOpen(Path.cwd())
 
-    qo = QuickOpen(tmp)
-    from textual._context import active_app as _aa
-    mock_app = MagicMock()
-    mock_app.call_from_thread = lambda fn, *a: fn(*a)
-    token = _aa.set(mock_app)
+    def mock_walk(*args):
+        yield ("/tmp", ["sub"], ["secret.py"])
 
-    mock_lv = MagicMock()
-    with patch.object(qo, "query_one", return_value=mock_lv):
-        try:
-            qo._scan_files.__wrapped__(qo)
-        except Exception:
-            pass
-        finally:
-            _aa.reset(token)
-            restricted.chmod(0o644)
-            restricted.unlink()
-            tmp.rmdir()
+    with patch.object(_os, "walk", side_effect=mock_walk):
+        original_is_file = Path.is_file
+        def patched_is_file(self, follow_symlinks=True):
+            if self.name == "secret.py":
+                raise PermissionError("denied")
+            return original_is_file(self, follow_symlinks=follow_symlinks)
+
+        with patch.object(Path, "is_file", autospec=True, side_effect=patched_is_file):
+            files = qo._scan_files_inner()
+            assert len(files) == 0  # skipped due to PermissionError
 
 
 # ── __main__.py:10 — if __name__ == "__main__": main() ─────────────────

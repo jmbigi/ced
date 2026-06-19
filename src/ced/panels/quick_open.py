@@ -57,8 +57,7 @@ class QuickOpen(ModalScreen[Path | None]):
         self._scan_files()
         self.query_one("#quick-input", Input).focus()
 
-    @work(thread=True, exclusive=True)
-    def _scan_files(self) -> None:
+    def _scan_files_inner(self) -> list[Path]:
         excluded = {".venv", "__pycache__", ".git", "node_modules", ".ced"}
         files: list[Path] = []
         for dirpath, dirnames, filenames in os.walk(self._root):
@@ -70,6 +69,11 @@ class QuickOpen(ModalScreen[Path | None]):
                         files.append(full)
                 except (PermissionError, OSError):
                     pass
+        return files
+
+    @work(thread=True, exclusive=True)
+    def _scan_files(self) -> None:
+        files = self._scan_files_inner()
         self.app.call_from_thread(self._on_files_scanned, files)
 
     def _on_files_scanned(self, files: list[Path]) -> None:
