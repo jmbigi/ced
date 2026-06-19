@@ -2,6 +2,8 @@
 
 **ced** is a modern, non-modal terminal code editor for programmers who work in the terminal. Built with Python + Textual, it runs on Linux, macOS, and Windows.
 
+[![ci](https://github.com/jmbigi/ced/actions/workflows/ci.yml/badge.svg)](https://github.com/jmbigi/ced/actions/workflows/ci.yml)
+
 ## Philosophy
 
 - **Non-modal** — never forced into vim modes. Every action is one Ctrl+ key away or visible in the help bar.
@@ -41,7 +43,7 @@
 
 ### From source
 ```bash
-git clone https://github.com/your/repo
+git clone https://github.com/jmbigi/ced
 cd ced
 python -m venv .venv
 # Windows:
