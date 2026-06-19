@@ -36,15 +36,22 @@ class OpenCodePanel(Widget):
     OpenCodePanel Input {
         dock: bottom;
         width: 100%;
-        height: 1;
+        height: 3;
         margin: 0 1 1 1;
-        background: $boost;
-        color: $text;
+        background: $surface;
+        color: $foreground;
+        border: tall $primary;
+        &.-textual-compact {
+            border: tall $primary !important;
+            height: 3;
+            padding: 0 2;
+        }
     }
 
     OpenCodePanel Input:focus {
+        border: tall $primary;
         background: $surface;
-        color: $text;
+        color: $foreground;
     }
     """
 

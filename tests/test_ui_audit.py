@@ -445,6 +445,78 @@ async def test_ui_audit_opencode_panel(debug_ui_events):
 
 
 @pytest.mark.asyncio
+async def test_ui_audit_opencode_input_typing(debug_ui_events):
+    """Escribir en el Input de OpenCode y verificar visibilidad del texto."""
+    app = Ced()
+    async with app.run_test(size=(120, 40)) as pilot:
+        await pilot.pause()
+
+        inp = app.query_one("#opencode-input", Input)
+        assert inp is not None, "Input no encontrado"
+
+        if debug_ui_events:
+            debug_ui_events.state_change("opencode_input_found", {
+                "region": str(inp.region),
+                "styles": f"border={inp.styles.border} bg={inp.styles.background} color={inp.styles.color}",
+            })
+
+        inp.focus()
+        await pilot.pause()
+
+        if debug_ui_events:
+            debug_ui_events.state_change("opencode_input_focused", {
+                "has_focus": inp.has_focus,
+            })
+
+        # Escribir carácter por carácter
+        for ch in "Hola mundo visible":
+            await pilot.press(ch)
+            if debug_ui_events:
+                debug_ui_events.key_press(ch, widget="Input", widget_id="opencode-input")
+
+        await pilot.pause()
+
+        # Verificar valor
+        assert inp.value == "Hola mundo visible", (
+            f"Input no almacena el texto: {inp.value!r}"
+        )
+
+        if debug_ui_events:
+            debug_ui_events.state_change("opencode_input_typed", {
+                "value": inp.value,
+                "length": len(inp.value),
+            })
+
+        print(f"\n  Input.value = {inp.value!r}")
+
+        # Verificar render_line produce texto visible
+        found_text = False
+        for y in range(3):
+            strip = inp.render_line(y)
+            for seg in strip:
+                txt = seg[0]
+                style = seg[1]
+                if "visible" in txt:
+                    found_text = True
+                    print(f"  Line {y}: {txt.strip()!r}")
+                    print(f"    fg={style.color} (light={style.color.get_truecolor().red > 128})")
+                    print(f"    bg={style.bgcolor} (dark={style.bgcolor.get_truecolor().red < 100})")
+                    assert style.color.get_truecolor().red > 128, (
+                        f"Texto del Input no es claro: color={style.color}"
+                    )
+                    assert style.bgcolor.get_truecolor().red < 100, (
+                        f"Fondo del Input no es oscuro: bg={style.bgcolor}"
+                    )
+                    break
+
+        assert found_text, "No se encontró el texto en el render del Input"
+
+        if debug_ui_events:
+            debug_ui_events.assertion(True, "Input text visible and verified")
+            debug_ui_events.screenshot("/tmp/opencode_input_test.png")
+
+
+@pytest.mark.asyncio
 async def test_ui_audit_sidebar_tree(debug_ui_events):
     """Verificar el panel lateral de archivos."""
     app = Ced()
