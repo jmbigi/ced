@@ -3,19 +3,21 @@ from __future__ import annotations
 import threading
 from pathlib import Path
 
-from hypothesis import assume, given, settings, strategies as st
+from hypothesis import assume, given, strategies as st
 from hypothesis.stateful import RuleBasedStateMachine, rule
 
-from ced.editor.buffer import Buffer, BufferManager
+from ced.editor.buffer import BufferManager
 
 
 # ── Load testing ────────────────────────────────────────────────────────
+
 
 def test_large_file_load(tmp_path: Path) -> None:
     """Load a 1MB+ file into EnhancedCodeEditor."""
     large = tmp_path / "large.py"
     large.write_text("x\n" * 200_000)
     from ced.editor.widget import EnhancedCodeEditor
+
     editor = EnhancedCodeEditor()
     editor.load_file(large)
     assert len(editor.text) > 100_000
@@ -24,6 +26,7 @@ def test_large_file_load(tmp_path: Path) -> None:
 def test_many_edits_stress() -> None:
     """10,000 sequential edits — verify stability."""
     from ced.editor.widget import EnhancedCodeEditor
+
     editor = EnhancedCodeEditor()
     for i in range(10_000):
         editor.text += "a"
@@ -54,6 +57,7 @@ def test_buffer_rapid_switch() -> None:
 
 
 # ── Concurrency testing ─────────────────────────────────────────────────
+
 
 def test_buffer_manager_concurrent_add() -> None:
     """Multi-threaded add operations — verify consistency."""
@@ -108,6 +112,7 @@ def test_buffer_manager_concurrent_mixed() -> None:
 
 # ── Fuzz testing (Hypothesis stateful amplified) ────────────────────────
 
+
 class BufferManagerFuzz(RuleBasedStateMachine):
     def __init__(self) -> None:
         super().__init__()
@@ -136,7 +141,6 @@ class BufferManagerFuzz(RuleBasedStateMachine):
     def remove_middle(self) -> None:
         assume(self.bm.count >= 3)
         idx = self.bm.count // 2
-        old_active = self.bm.active_index
         self.bm.remove(idx)
         self.model_count = max(0, self.model_count - 1)
         assert self.bm.active_index == -1 or 0 <= self.bm.active_index < self.bm.count
@@ -174,10 +178,12 @@ TestBufferFuzz = BufferManagerFuzz.TestCase
 
 # ── Config fuzz ─────────────────────────────────────────────────────────
 
+
 @given(st.integers(min_value=-100, max_value=100))
 def test_config_tab_size_fuzz(tab_size: int) -> None:
     """Fuzz EditorConfig with any integer tab_size."""
     from ced.config import EditorConfig
+
     cfg = EditorConfig(tab_size=tab_size)
     assert cfg.tab_size >= 1  # clamp
 
@@ -186,6 +192,7 @@ def test_config_tab_size_fuzz(tab_size: int) -> None:
 def test_config_opencode_path_fuzz(path: str) -> None:
     """Fuzz OpenCodeConfig with any string path."""
     from ced.config import OpenCodeConfig
+
     cfg = OpenCodeConfig(path=path)
     assert isinstance(cfg.path, str)
     assert cfg.path  # never empty after __post_init__
@@ -195,6 +202,7 @@ def test_config_opencode_path_fuzz(path: str) -> None:
 def test_theme_config_mode_fuzz(mode: str) -> None:
     """Fuzz ThemeConfig with valid and invalid modes."""
     from ced.config import ThemeConfig
+
     try:
         cfg = ThemeConfig(mode=mode)
         assert cfg.mode == mode
@@ -206,6 +214,7 @@ def test_theme_config_mode_fuzz(mode: str) -> None:
 def test_config_merge_fuzz(data: dict[str, str]) -> None:
     """Fuzz Config._merge with arbitrary dicts — should never crash."""
     from ced.config import Config
+
     cfg = Config()
     cfg._merge(data)  # should not raise
 

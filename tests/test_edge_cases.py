@@ -137,7 +137,8 @@ class TestMainModule:
     def test_main_name_block(self) -> None:
         result = subprocess.run(
             [sys.executable, "-c", "import ced.__main__; print('ok')"],
-            capture_output=True, text=True,
+            capture_output=True,
+            text=True,
         )
         assert result.returncode == 0
         assert "ok" in result.stdout
@@ -145,12 +146,11 @@ class TestMainModule:
     def test_main_name_block_import(self) -> None:
         result = subprocess.run(
             [sys.executable, "-c", "import ced.__main__ as m; assert callable(m.main)"],
-            capture_output=True, text=True,
+            capture_output=True,
+            text=True,
             timeout=5,
         )
         assert result.returncode == 0
-
-
 
 
 class TestDetectDarkModeWinreg:
@@ -160,9 +160,11 @@ class TestDetectDarkModeWinreg:
 
         class FakeWinreg:
             HKEY_CURRENT_USER = object()
+
             @staticmethod
             def OpenKey(*args):
                 return "fake_key"
+
             @staticmethod
             def QueryValueEx(key, name):
                 return (0, 1)
@@ -178,9 +180,11 @@ class TestDetectDarkModeWinreg:
 
         class FakeWinreg:
             HKEY_CURRENT_USER = object()
+
             @staticmethod
             def OpenKey(*args):
                 return "fake_key"
+
             @staticmethod
             def QueryValueEx(key, name):
                 return (1, 1)

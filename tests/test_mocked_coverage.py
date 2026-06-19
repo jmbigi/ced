@@ -14,10 +14,10 @@ from ced.panels.opencode_panel import OpenCodePanel
 
 # ── EditorArea: open_file existing path (lines 89-94) ───────────────────
 
+
 def test_editor_open_file_existing() -> None:
     ea = EditorArea()
-    # Add a buffer so get_by_path returns something
-    buf = ea.buffers.add(Path("/tmp/existing.py"))
+    ea.buffers.add(Path("/tmp/existing.py"))
     ea._tab_ids.append("tab_existing")
     mock_tabs = MagicMock()
     with patch.object(ea, "query_one", return_value=mock_tabs):
@@ -27,6 +27,7 @@ def test_editor_open_file_existing() -> None:
 
 
 # ── EditorArea: get_active_editor no active tab (line 129) ──────────────
+
 
 def test_editor_get_active_no_active() -> None:
     ea = EditorArea()
@@ -48,6 +49,7 @@ def test_editor_get_active_none() -> None:
 
 # ── EditorArea: tab_next empty (line 141-142) ─────────────────────────────
 
+
 def test_editor_tab_next_empty() -> None:
     ea = EditorArea()
     ea._tab_ids = []
@@ -55,6 +57,7 @@ def test_editor_tab_next_empty() -> None:
 
 
 # ── EditorArea: tab_next with unknown active (lines 146-148) ──────────────
+
 
 def test_editor_tab_next_unknown_active() -> None:
     ea = EditorArea()
@@ -69,6 +72,7 @@ def test_editor_tab_next_unknown_active() -> None:
 
 # ── EditorArea: tab_prev empty (line 152-153) ─────────────────────────────
 
+
 def test_editor_tab_prev_empty() -> None:
     ea = EditorArea()
     ea._tab_ids = []
@@ -76,6 +80,7 @@ def test_editor_tab_prev_empty() -> None:
 
 
 # ── EditorArea: tab_prev with unknown active (lines 157-159) ──────────────
+
 
 def test_editor_tab_prev_unknown_active() -> None:
     ea = EditorArea()
@@ -89,6 +94,7 @@ def test_editor_tab_prev_unknown_active() -> None:
 
 
 # ── EditorArea: close_active with empty/untitled (lines 177-179) ──────────
+
 
 def test_editor_close_active_empty() -> None:
     ea = EditorArea()
@@ -116,6 +122,7 @@ def test_editor_close_active_empty_string() -> None:
 
 # ── EditorArea: close_active normal flow (lines 183-203) ────────────────
 
+
 def test_editor_close_active_normal() -> None:
     ea = EditorArea()
     ea._tab_ids = ["tab_test"]
@@ -129,6 +136,7 @@ def test_editor_close_active_normal() -> None:
 
 
 # ── SearchBar: button pressed handlers (lines 73-89) ─────────────────────
+
 
 def test_search_bar_button_close() -> None:
     sb = SearchBar()
@@ -176,6 +184,7 @@ def test_search_bar_button_unknown() -> None:
 
 # ── SearchBar: get_text + input_submitted (lines 105, 108, 111-112) ──────
 
+
 def test_search_bar_get_text() -> None:
     sb = SearchBar()
     inp = MagicMock()
@@ -201,40 +210,8 @@ def test_search_bar_input_submitted_find() -> None:
             mock_pm.assert_called_once()
 
 
-# ── JumpMode: key handlers (lines 58-73) ─────────────────────────────────
-
-def test_jump_key_escape() -> None:
-    jm = JumpMode()
-    with patch.object(jm, "dismiss") as mock_d:
-        jm.key_escape()
-        mock_d.assert_called_once_with(None)
-
-
-def test_jump_key_backspace() -> None:
-    jm = JumpMode()
-    jm._buffer = "ab"
-    jm.key_backspace()
-    assert jm._buffer == "a"
-
-
-def test_jump_key_press_second_char() -> None:
-    jm = JumpMode()
-    jm._buffer = "a"
-    with patch.object(jm, "dismiss") as mock_d:
-        jm.key_press(type("K", (), {"character": "b"})())
-        mock_d.assert_called_once_with("ab")
-
-
-def test_jump_key_press_first_char() -> None:
-    jm = JumpMode()
-    jm._buffer = ""
-    with patch.object(jm, "dismiss") as mock_d:
-        jm.key_press(type("K", (), {"character": "x"})())
-        mock_d.assert_not_called()
-        assert jm._buffer == "x"
-
-
 # ── Palette: list/input handlers (lines 75-76, 85-88, 91-93) ─────────────
+
 
 def test_palette_input_changed_empty() -> None:
     pal = CommandPalette([])
@@ -310,6 +287,7 @@ def test_palette_input_submitted_valid() -> None:
 
 # ── JumpMode: key handlers (lines 58-73) ─────────────────────────────────
 
+
 def _make_jm():
     jm = JumpMode()
     patch.object(jm, "_update_display").start()
@@ -353,6 +331,7 @@ def test_jump_key_press_first_char() -> None:
 
 # ── JumpMode: key_press with None character (line 60) ─────────────────────
 
+
 def test_jump_key_press_none_char() -> None:
     jm = _make_jm()
     mock_key = MagicMock()
@@ -362,6 +341,7 @@ def test_jump_key_press_none_char() -> None:
 
 
 # ── EditorArea: save_active OSError (lines 177-179) ─────────────────────
+
 
 def test_editor_save_active_oserror() -> None:
     ea = EditorArea()
@@ -377,6 +357,7 @@ def test_editor_save_active_oserror() -> None:
 
 # ── QuickOpen: _populate with file outside root (lines 85-86) ──────────
 
+
 def test_quick_open_populate_outside_root() -> None:
     qo = QuickOpen(Path("/root/path"))
     mock_lv = MagicMock()
@@ -387,6 +368,7 @@ def test_quick_open_populate_outside_root() -> None:
 
 
 # ── QuickOpen: handlers (lines 71-72, 85-86, 99-100, 109-112, 115-118) ──
+
 
 def test_quick_open_input_changed_empty() -> None:
     qo = QuickOpen(Path.cwd())
@@ -452,6 +434,7 @@ def test_quick_open_escape() -> None:
 
 # ── FileTreePanel: refresh_tree + file_selected (lines 23-32) ────────────
 
+
 def test_file_tree_refresh() -> None:
     ftp = FileTreePanel(path=Path.cwd())
     with patch.object(ftp, "reload"):
@@ -472,6 +455,7 @@ def test_file_tree_file_selected_is_file(tmp_path: Path) -> None:
     ftp = FileTreePanel(path=tmp_path)
     with patch.object(ftp, "post_message") as mock_pm:
         from textual.widgets import DirectoryTree
+
         node = MagicMock()
         ev = DirectoryTree.FileSelected(node=node, path=src)
         ftp.on_directory_tree_file_selected(ev)
@@ -482,6 +466,7 @@ def test_file_tree_file_selected_not_file(tmp_path: Path) -> None:
     ftp = FileTreePanel(path=tmp_path)
     with patch.object(ftp, "post_message") as mock_pm:
         from textual.widgets import DirectoryTree
+
         node = MagicMock()
         ev = DirectoryTree.FileSelected(node=node, path=tmp_path)
         ftp.on_directory_tree_file_selected(ev)
@@ -494,6 +479,7 @@ def test_file_tree_file_opened_message() -> None:
 
 
 # ── OpenCodePanel: worker methods (lines 90-121) ─────────────────────────
+
 
 def test_opencode_panel_init_default() -> None:
     ocp = OpenCodePanel()

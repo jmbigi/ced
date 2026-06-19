@@ -5,7 +5,13 @@ from pathlib import Path
 from hypothesis import assume, given, settings, strategies as st
 from hypothesis.stateful import RuleBasedStateMachine, rule
 
-from ced.config import Config, EditorConfig, KeybindingConfig, OpenCodeConfig, ThemeConfig
+from ced.config import (
+    Config,
+    EditorConfig,
+    KeybindingConfig,
+    OpenCodeConfig,
+    ThemeConfig,
+)
 from ced.editor.buffer import Buffer, BufferManager
 from ced.commands.registry import Command, CommandRegistry
 
@@ -45,8 +51,10 @@ def test_editor_config_valid_ranges(
     tab_size: int, soft_wrap: bool, line_numbers: bool, font_size: int
 ) -> None:
     cfg = EditorConfig(
-        tab_size=tab_size, soft_wrap=soft_wrap,
-        line_numbers=line_numbers, font_size=font_size,
+        tab_size=tab_size,
+        soft_wrap=soft_wrap,
+        line_numbers=line_numbers,
+        font_size=font_size,
     )
     assert cfg.tab_size == tab_size
     assert cfg.soft_wrap is soft_wrap
@@ -54,7 +62,10 @@ def test_editor_config_valid_ranges(
     assert cfg.font_size == font_size
 
 
-@given(st.sampled_from(["auto", "dark", "light"]), st.sampled_from(["monokai", "dracula", "nord"]))
+@given(
+    st.sampled_from(["auto", "dark", "light"]),
+    st.sampled_from(["monokai", "dracula", "nord"]),
+)
 def test_theme_config_valid(mode: str, name: str) -> None:
     cfg = ThemeConfig(mode=mode, name=name)
     assert cfg.mode == mode
@@ -81,7 +92,13 @@ def test_config_merge_tab_size(tab_size: int) -> None:
     assert cfg.editor.tab_size == tab_size
 
 
-@given(st.lists(st.text(min_size=1, max_size=10).map(lambda s: f"app.{s}"), min_size=0, max_size=10))
+@given(
+    st.lists(
+        st.text(min_size=1, max_size=10).map(lambda s: f"app.{s}"),
+        min_size=0,
+        max_size=10,
+    )
+)
 def test_command_registry_register_many(ids: list[str]) -> None:
     assume(len(set(ids)) == len(ids))
     reg = CommandRegistry()
@@ -109,7 +126,9 @@ def test_command_search(query: str) -> None:
 @st.composite
 def buffer_list(draw: st.DrawFn) -> list[Buffer]:
     n = draw(st.integers(min_value=0, max_value=5))
-    return [Buffer(Path(f"/tmp/{i}.py") if draw(st.booleans()) else None) for i in range(n)]
+    return [
+        Buffer(Path(f"/tmp/{i}.py") if draw(st.booleans()) else None) for i in range(n)
+    ]
 
 
 @given(buffer_list())
@@ -185,6 +204,7 @@ TestBufferManagerStates = BufferManagerMachine.TestCase
 def test_detect_language_all_extensions(count: int, seed: int) -> None:
     import random
     from ced.editor.widget import LANGUAGE_MAP, detect_language
+
     rng = random.Random(seed)
     extensions = list(LANGUAGE_MAP.keys())
     for _ in range(min(count, len(extensions))):

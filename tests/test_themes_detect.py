@@ -22,12 +22,15 @@ class TestDetectDarkMode:
             # winreg imports but raises
             class FakeWinreg:
                 HKEY_CURRENT_USER = 1
+
                 @staticmethod
                 def OpenKey(*args):
                     raise OSError("registry error")
+
                 @staticmethod
                 def QueryValueEx(*args):
                     raise OSError("registry error")
+
             with patch("builtins.__import__", return_value=FakeWinreg):
                 result = detect_dark_mode()
                 assert result is True

@@ -1,3 +1,4 @@
+# ruff: noqa: E402, F401, F841, F811
 """Comprehensive coverage driver — exercises every line in src/ced.
 
 Run: coverage run tests/coverage_all.py && coverage report --show-missing
@@ -10,12 +11,19 @@ import sys
 from pathlib import Path
 
 import coverage
+
 cov = coverage.Coverage(source=["src/ced"])
 cov.start()
 
 # ── Imports ──────────────────────────────────────────────────────────────
 from ced.app import Ced
-from ced.config import Config, EditorConfig, KeybindingConfig, OpenCodeConfig, ThemeConfig
+from ced.config import (
+    Config,
+    EditorConfig,
+    KeybindingConfig,
+    OpenCodeConfig,
+    ThemeConfig,
+)
 from ced.commands.registry import Command, CommandRegistry
 from ced.editor.buffer import Buffer, BufferManager
 from ced.editor.widget import EnhancedCodeEditor, detect_language
@@ -27,13 +35,12 @@ from ced.panels.help_bar import HelpBar
 from ced.panels.search_bar import SearchBar
 from ced.panels.jump import JumpMode
 from ced.panels.palette import CommandPalette
-from ced.panels.quick_open import QuickOpen
 from ced.themes.manager import list_themes, detect_dark_mode, get_theme_variables
-from ced.types import KeybindingPreset, ThemeMode
 
 # Trigger __init__._get_version() fallback (lines 12-13)
 import ced.__init__ as _ced_init
 from unittest.mock import patch
+
 with patch("ced.__init__._metadata_version", side_effect=Exception("fail")):
     assert _ced_init._get_version() == "0.1.0"
 
@@ -98,11 +105,13 @@ except ValueError:
 
 Config()
 # Trigger config file reading path (lines 74-76)
-import os, tempfile
+import os
+import tempfile
+
 _tmp_home = Path(tempfile.mkdtemp())
 _cfg_dir = _tmp_home / ".config" / "ced"
 _cfg_dir.mkdir(parents=True)
-(_cfg_dir / "config.toml").write_text('[editor]\ntab_size = 2\n')
+(_cfg_dir / "config.toml").write_text("[editor]\ntab_size = 2\n")
 _old_home = os.environ.get("HOME")
 os.environ["HOME"] = str(_tmp_home)
 Config.load()
@@ -112,7 +121,14 @@ else:
     del os.environ["HOME"]
 
 EditorConfig()
-EditorConfig(tab_size=2, soft_wrap=True, line_numbers=False, indent_guides=False, font_size=14, show_minimap=True)
+EditorConfig(
+    tab_size=2,
+    soft_wrap=True,
+    line_numbers=False,
+    indent_guides=False,
+    font_size=14,
+    show_minimap=True,
+)
 EditorConfig(tab_size=0)
 EditorConfig(tab_size=-5)
 EditorConfig(font_size=1)
@@ -149,7 +165,9 @@ detect_language(None)
 detect_language(Path("Makefile"))
 
 ed = EnhancedCodeEditor()
-ed = EnhancedCodeEditor(path="/tmp/f.py", show_line_numbers=True, soft_wrap=False, indent_width=2)
+ed = EnhancedCodeEditor(
+    path="/tmp/f.py", show_line_numbers=True, soft_wrap=False, indent_width=2
+)
 ed.file_path
 ed.file_path = Path("/tmp/g.py")
 ed.file_path = None
@@ -176,6 +194,7 @@ mgr.bindings
 mgr.current_preset
 # override/remove_override (lines 34-35, 38-39, 47)
 from textual.binding import Binding as TxtBinding
+
 mgr.override("test_act", TxtBinding("ctrl+t", "test_act", "Test"))
 mgr.remove_override("test_act")
 mgr.remove_override("nonexistent")
@@ -233,8 +252,10 @@ app._apply_keybindings()
 
 # ── App-level coverage (with mounting) ──────────────────────────────────
 import asyncio  # noqa: F811
+
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
+
 
 async def run_mounted():
     async with app.run_test() as pilot:
@@ -269,6 +290,7 @@ async def run_mounted():
         editor = app.query_one("#editor")
         editor.tab_next()  # single tab → wraps to itself
         await pilot.pause()
+
 
 loop.run_until_complete(run_mounted())
 

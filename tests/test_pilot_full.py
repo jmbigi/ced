@@ -16,7 +16,14 @@ async def test_pilot_theme_cycle() -> None:
         app.action_theme_next()
         await pilot.pause()
         assert app.config.theme.name != before
-        assert app.config.theme.name in ("monokai", "dracula", "nord", "catppuccin", "github-dark", "solarized-dark")
+        assert app.config.theme.name in (
+            "monokai",
+            "dracula",
+            "nord",
+            "catppuccin",
+            "github-dark",
+            "solarized-dark",
+        )
 
 
 @pytest.mark.asyncio
@@ -199,6 +206,7 @@ async def test_pilot_search_request(tmp_path: Path) -> None:
         assert active is not None
         # Fire search event
         from ced.panels.search_bar import SearchBar
+
         msg = SearchBar.SearchRequested("hello")
         app.on_search_bar_search_requested(msg)
         await pilot.pause()
@@ -218,6 +226,7 @@ async def test_pilot_replace_request(tmp_path: Path) -> None:
         active = editor.get_active_editor()
         assert active is not None
         from ced.panels.search_bar import SearchBar
+
         msg = SearchBar.ReplaceRequested("foo", "bar", all=False)
         app.on_search_bar_replace_requested(msg)
         await pilot.pause()
@@ -236,6 +245,7 @@ async def test_pilot_replace_all(tmp_path: Path) -> None:
         active = editor.get_active_editor()
         assert active is not None
         from ced.panels.search_bar import SearchBar
+
         msg = SearchBar.ReplaceRequested("foo", "bar", all=True)
         app.on_search_bar_replace_requested(msg)
         await pilot.pause()

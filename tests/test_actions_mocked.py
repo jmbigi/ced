@@ -95,11 +95,13 @@ def test_action_toggle_opencode():
     mock_panel.display = False
     mock_input = MagicMock()
     call_count = [0]
+
     def query_one_side_effect(*args, **kw):
         call_count[0] += 1
         if call_count[0] >= 3:
             return mock_input  # #opencode-input → has focus()
         return mock_panel
+
     with patch.object(app, "query_one", side_effect=query_one_side_effect):
         app.action_toggle_opencode()
         assert mock_panel.display is True
@@ -134,6 +136,7 @@ def test_action_close_tab():
 def test_action_close_tab_modified():
     import asyncio
     from unittest.mock import AsyncMock
+
     app = Ced()
     mock_editor = MockEditorArea()
     mock_editor.buffers.active_buffer.is_modified = True
@@ -145,6 +148,7 @@ def test_action_close_tab_modified():
 def test_action_close_tab_modified_cancelled():
     import asyncio
     from unittest.mock import AsyncMock
+
     app = Ced()
     mock_editor = MockEditorArea()
     mock_editor.buffers.active_buffer.is_modified = True
@@ -287,7 +291,6 @@ def test_action_redo_no_editor():
 
 def test_on_command_selected():
     app = Ced()
-    called = False
     with patch.object(app.commands, "execute") as mock_exec:
         app._on_command_selected("app.quit")
         mock_exec.assert_called_with("app.quit")
@@ -340,6 +343,7 @@ def test_on_jump_no_match():
 def test_on_search_requested():
     app = Ced()
     from ced.panels.search_bar import SearchBar
+
     mock_editor = MockEditorArea()
     with patch.object(app, "query_one", return_value=mock_editor):
         event = SearchBar.SearchRequested("some")
@@ -349,6 +353,7 @@ def test_on_search_requested():
 def test_on_search_requested_no_query():
     app = Ced()
     from ced.panels.search_bar import SearchBar
+
     with patch.object(app, "query_one"):
         event = SearchBar.SearchRequested("")
         app.on_search_bar_search_requested(event)
@@ -357,6 +362,7 @@ def test_on_search_requested_no_query():
 def test_on_replace_requested():
     app = Ced()
     from ced.panels.search_bar import SearchBar
+
     mock_editor = MockEditorArea()
     with patch.object(app, "query_one", return_value=mock_editor):
         event = SearchBar.ReplaceRequested("old", "new", all=False)
@@ -366,6 +372,7 @@ def test_on_replace_requested():
 def test_on_replace_all_requested():
     app = Ced()
     from ced.panels.search_bar import SearchBar
+
     mock_editor = MockEditorArea()
     with patch.object(app, "query_one", return_value=mock_editor):
         event = SearchBar.ReplaceRequested("old", "new", all=True)
@@ -375,6 +382,7 @@ def test_on_replace_all_requested():
 def test_on_replace_requested_no_find():
     app = Ced()
     from ced.panels.search_bar import SearchBar
+
     with patch.object(app, "query_one"):
         event = SearchBar.ReplaceRequested("", "new", all=False)
         app.on_search_bar_replace_requested(event)
@@ -383,6 +391,7 @@ def test_on_replace_requested_no_find():
 def test_apply_theme():
     app = Ced()
     from ced.themes.manager import list_themes
+
     for theme_name in list_themes():
         app.config.theme.name = theme_name
         app._apply_theme()
@@ -415,6 +424,7 @@ def test_update_help_bar():
 def test_on_file_opened():
     app = Ced()
     from ced.panels.file_tree import FileTreePanel
+
     mock_editor = MockEditorArea()
     with patch.object(app, "query_one", return_value=mock_editor):
         event = FileTreePanel.FileOpened(Path("/tmp/test.py"))
@@ -428,6 +438,7 @@ def test_on_file_opened():
 def test_app_help_bar_dedup_line197() -> None:
     """Cover app.py:197 — continue on seen action."""
     from textual.binding import Binding
+
     app = Ced()
     app._keybinding_manager.override("save", Binding("ctrl+s", "save", "Save"))
     app._keybinding_manager.override("save", Binding("ctrl+alt+s", "save", "Save"))
@@ -441,7 +452,9 @@ def test_app_keybinding_next_valueerror_lines388_389() -> None:
     app = Ced()
     with patch.object(app, "notify"):
         with patch.object(app, "_update_help_bar"):
-            with patch("ced.app.list_keybinding_presets", return_value=["nano", "emacs"]):
+            with patch(
+                "ced.app.list_keybinding_presets", return_value=["nano", "emacs"]
+            ):
                 app._keybinding_manager._current_preset = "vscode"
                 app.action_keybinding_next()
 
@@ -451,7 +464,14 @@ def test_action_theme_next_unknown():
     app = Ced()
     app.config.theme.name = "nonexistent"
     app.action_theme_next()
-    assert app.config.theme.name in ("monokai", "dracula", "nord", "catppuccin", "github-dark", "solarized-dark")
+    assert app.config.theme.name in (
+        "monokai",
+        "dracula",
+        "nord",
+        "catppuccin",
+        "github-dark",
+        "solarized-dark",
+    )
 
 
 def test_action_keybinding_next_with_mocks():
@@ -460,7 +480,12 @@ def test_action_keybinding_next_with_mocks():
     with patch.object(app, "_update_help_bar"):
         with patch.object(app, "notify"):
             app.action_keybinding_next()
-    assert app._keybinding_manager.current_preset in ("vscode", "nano", "sublime", "emacs")
+    assert app._keybinding_manager.current_preset in (
+        "vscode",
+        "nano",
+        "sublime",
+        "emacs",
+    )
 
 
 def test_action_help_notify():
@@ -493,6 +518,7 @@ def test__apply_theme_light_mode():
 
 def test_on_search_bar_search_requested_with_text():
     from ced.panels.search_bar import SearchBar
+
     app = Ced()
     mock_editor = MockEditorArea()
     with patch.object(app, "query_one", return_value=mock_editor):
@@ -502,6 +528,7 @@ def test_on_search_bar_search_requested_with_text():
 
 def test_on_search_bar_replace_requested_all():
     from ced.panels.search_bar import SearchBar
+
     app = Ced()
     mock_editor = MockEditorArea()
     with patch.object(app, "query_one", return_value=mock_editor):
@@ -511,6 +538,7 @@ def test_on_search_bar_replace_requested_all():
 
 def test_on_search_bar_replace_requested_one():
     from ced.panels.search_bar import SearchBar
+
     app = Ced()
     mock_editor = MockEditorArea()
     with patch.object(app, "query_one", return_value=mock_editor):

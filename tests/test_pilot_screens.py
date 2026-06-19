@@ -52,6 +52,7 @@ async def test_pilot_quick_open_filter(tmp_path: Path) -> None:
         await pilot.pause()
         # Override root path for quick open
         from ced.panels.quick_open import QuickOpen
+
         app.push_screen(QuickOpen(tmp_path))
         await pilot.pause()
         # Type to filter
@@ -79,6 +80,7 @@ async def test_pilot_jump_mode_input() -> None:
         editor = app.query_one("#editor")
         from pathlib import Path
         import tempfile
+
         with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write("hello world\nfoo bar\n")
             f.flush()
