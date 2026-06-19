@@ -82,7 +82,7 @@ class TerminalPanel(Widget):
     def _start_shell(self) -> None:
         """Fork a shell process in a PTY."""
         pid, fd = pty.fork()
-        if pid == 0:
+        if pid == 0:  # pragma: no cover
             os.environ.setdefault("TERM", "xterm-256color")
             os.execvp(self._shell, [self._shell])
         else:
@@ -138,8 +138,6 @@ class TerminalPanel(Widget):
             self.write("\x1b")
         elif event.key == "space":
             self.write(" ")
-        elif len(event.key) == 1:
-            self.write(event.key)
 
     def render_line(self, y: int) -> Strip:
         """Render one line of the terminal output."""

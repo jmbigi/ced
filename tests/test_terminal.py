@@ -276,3 +276,57 @@ class TestTerminalPanel:
         t._running = False
         strip = t.render_line(0)
         assert strip is not None
+
+    def test_render_line_with_content(self) -> None:
+        t = TerminalPanel()
+        t._running = True
+        t._screen.resize(5, 10)
+        t._stream.feed("hello\r\nworld\r\n")
+        # Now render_line should show content
+        for y in range(5):
+            strip = t.render_line(y)
+            assert strip is not None
+        text = "\n".join(t._screen.display)
+        assert "hello" in text
+
+    def test_kill_shell_remove_reader_raises(self) -> None:
+        """Cover _kill_shell line 66-67: except in remove_reader."""
+        t = TerminalPanel()
+        t._fd = 999
+        t._pid = 12345
+        mock_loop = __import__("unittest").mock.MagicMock()
+        mock_loop.remove_reader.side_effect = Exception("boom")
+        with patch("asyncio.get_event_loop", return_value=mock_loop):
+            with patch("os.close"):
+                with patch("os.kill"):
+                    with patch("os.waitpid"):
+                        t._kill_shell()
+        assert t._fd is None
+        assert t._pid is None
+
+    def test_on_resize(self) -> None:
+        """Cover on_resize method (lines 159-164)."""
+        t = TerminalPanel()
+        t._fd = 999
+        with patch("fcntl.ioctl"):
+            from textual.geometry import Size
+            from textual.events import Resize
+
+            ev = Resize(
+                size=Size(60, 15),
+                virtual_size=Size(60, 15),
+                container_size=Size(58, 13),
+            )
+            t.on_resize(ev)
+        assert t._cols >= 20
+        assert t._rows >= 5
+
+    def test_write_oserror_path(self) -> None:
+        """Cover write method OSError branch (lines 141-142 in original)."""
+        t = TerminalPanel()
+        t._fd = 999
+        t._running = True
+        with patch("os.write", side_effect=OSError("broken")):
+            with patch.object(t, "_kill_shell") as mock_kill:
+                t.write("data")
+                mock_kill.assert_called_once()
