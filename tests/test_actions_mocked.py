@@ -425,6 +425,27 @@ def test_on_file_opened():
 # on_tabbed_content_tab_activated is covered by pilot integration tests
 
 
+def test_app_help_bar_dedup_line197() -> None:
+    """Cover app.py:197 — continue on seen action."""
+    from textual.binding import Binding
+    app = Ced()
+    app._keybinding_manager.override("save", Binding("ctrl+s", "save", "Save"))
+    app._keybinding_manager.override("save", Binding("ctrl+alt+s", "save", "Save"))
+    mock_hb = MagicMock()
+    with patch.object(app, "query_one", return_value=mock_hb):
+        app._update_help_bar()
+
+
+def test_app_keybinding_next_valueerror_lines388_389() -> None:
+    """Cover app.py:388-389 — except ValueError in action_keybinding_next."""
+    app = Ced()
+    with patch.object(app, "notify"):
+        with patch.object(app, "_update_help_bar"):
+            with patch("ced.app.list_keybinding_presets", return_value=["nano", "emacs"]):
+                app._keybinding_manager._current_preset = "vscode"
+                app.action_keybinding_next()
+
+
 def test_action_theme_next_unknown():
     """The except ValueError branch (lines 372-373)."""
     app = Ced()
