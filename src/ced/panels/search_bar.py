@@ -78,13 +78,21 @@ class SearchBar(Widget):
             row.display = self._show_replace
             event.button.label = "△" if self._show_replace else "▽"
         elif event.button.id == "replace-btn":
-            self.post_message(self.ReplaceRequested(
-                self.get_search_text(), self.get_replace_text(), all=False,
-            ))
+            self.post_message(
+                self.ReplaceRequested(
+                    self.get_search_text(),
+                    self.get_replace_text(),
+                    all=False,
+                )
+            )
         elif event.button.id == "replace-all-btn":
-            self.post_message(self.ReplaceRequested(
-                self.get_search_text(), self.get_replace_text(), all=True,
-            ))
+            self.post_message(
+                self.ReplaceRequested(
+                    self.get_search_text(),
+                    self.get_replace_text(),
+                    all=True,
+                )
+            )
 
     def show_replace_ui(self, show: bool) -> None:
         self._show_replace = show

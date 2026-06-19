@@ -2,7 +2,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ced.config import Config, EditorConfig, OpenCodeConfig, ThemeConfig, KeybindingConfig
+from ced.config import (
+    Config,
+    EditorConfig,
+    OpenCodeConfig,
+    ThemeConfig,
+    KeybindingConfig,
+)
 
 
 def test_config_defaults() -> None:
@@ -75,7 +81,9 @@ def test_config_merge_invalid_mode_fallback() -> None:
 def test_config_merge_invalid_preset_fallback() -> None:
     cfg = Config()
     cfg._merge({"keybindings": {"preset": "invalid"}})
-    assert cfg.keybindings.preset == "vscode", "invalid preset should fall back to vscode"
+    assert cfg.keybindings.preset == "vscode", (
+        "invalid preset should fall back to vscode"
+    )
 
 
 def test_config_load_from_file(tmp_path: Path) -> None:

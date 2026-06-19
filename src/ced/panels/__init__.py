@@ -8,6 +8,13 @@ from ced.panels.quick_open import QuickOpen
 from ced.panels.jump import JumpMode
 
 __all__ = [
-    "CommandPalette", "EditorArea", "EditorSettings", "FileTreePanel",
-    "HelpBar", "JumpMode", "OpenCodePanel", "QuickOpen", "SearchBar",
+    "CommandPalette",
+    "EditorArea",
+    "EditorSettings",
+    "FileTreePanel",
+    "HelpBar",
+    "JumpMode",
+    "OpenCodePanel",
+    "QuickOpen",
+    "SearchBar",
 ]

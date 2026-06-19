@@ -24,13 +24,24 @@ class TestThemeManager:
         assert theme == THEMES["monokai"]
 
     def test_all_themes_have_required_keys(self) -> None:
-        required = {"primary", "secondary", "accent", "surface", "text",
-                    "text-muted", "boost", "warning", "error", "success"}
+        required = {
+            "primary",
+            "secondary",
+            "accent",
+            "surface",
+            "text",
+            "text-muted",
+            "boost",
+            "warning",
+            "error",
+            "success",
+        }
         for name, theme in THEMES.items():
             missing = required - set(theme.keys())
             assert not missing, f"Theme {name!r} missing keys: {missing}"
 
     def test_detect_dark_mode(self) -> None:
         from ced.themes.manager import detect_dark_mode
+
         result = detect_dark_mode()
         assert isinstance(result, bool)

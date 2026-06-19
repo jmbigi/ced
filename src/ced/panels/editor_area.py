@@ -20,7 +20,9 @@ class EditorSettings:
 
 
 class EditorArea(Widget):
-    def __init__(self, editor_settings: EditorSettings | None = None, *args, **kwargs) -> None:
+    def __init__(
+        self, editor_settings: EditorSettings | None = None, *args, **kwargs
+    ) -> None:
         super().__init__(*args, **kwargs)
         self._editor_settings = editor_settings or EditorSettings()
         self.buffers = BufferManager()
@@ -96,7 +98,8 @@ class EditorArea(Widget):
         self.buffers.open(path)
         try:
             editor = EnhancedCodeEditor(
-                path=path, id=editor_id,
+                path=path,
+                id=editor_id,
                 show_line_numbers=self._editor_settings.show_line_numbers,
                 soft_wrap=self._editor_settings.soft_wrap,
                 indent_width=self._editor_settings.indent_width,
@@ -130,7 +133,9 @@ class EditorArea(Widget):
             if idx < self.buffers.count:
                 self.buffers.active_index = idx
 
-    def on_tabbed_content_tab_activated(self, event: TabbedContent.TabActivated) -> None:
+    def on_tabbed_content_tab_activated(
+        self, event: TabbedContent.TabActivated
+    ) -> None:
         event.stop()
         self._sync_buffer_index()
 

@@ -40,7 +40,9 @@ class OpenCodePanel(Widget):
     }
     """
 
-    def __init__(self, opencode_path: str = "opencode", auto_start: bool = True, *args, **kwargs) -> None:
+    def __init__(
+        self, opencode_path: str = "opencode", auto_start: bool = True, *args, **kwargs
+    ) -> None:
         super().__init__(*args, **kwargs)
         self._opencode_path = opencode_path
         self._auto_start = auto_start
@@ -65,7 +67,9 @@ class OpenCodePanel(Widget):
                 timeout=5,
             )
             if result.returncode == 0:
-                self.app.call_from_thread(self._write_log, "[green]OpenCode ready[/green]")
+                self.app.call_from_thread(
+                    self._write_log, "[green]OpenCode ready[/green]"
+                )
             else:
                 self.app.call_from_thread(
                     self._write_log,
@@ -98,13 +102,19 @@ class OpenCodePanel(Widget):
                 [self._opencode_path, query], capture_output=True, text=True, timeout=30
             )
             if result.returncode == 0:
-                self.app.call_from_thread(self._write_log, f"[primary]OpenCode:[/primary] {result.stdout.strip()}")
+                self.app.call_from_thread(
+                    self._write_log,
+                    f"[primary]OpenCode:[/primary] {result.stdout.strip()}",
+                )
             else:
                 self.app.call_from_thread(
-                    self._write_log, f"[red]Error:[/red] {result.stderr.strip() or 'no output'}"
+                    self._write_log,
+                    f"[red]Error:[/red] {result.stderr.strip() or 'no output'}",
                 )
         except FileNotFoundError:
-            self.app.call_from_thread(self._write_log, "[red]OpenCode CLI not available[/red]")
+            self.app.call_from_thread(
+                self._write_log, "[red]OpenCode CLI not available[/red]"
+            )
         except subprocess.TimeoutExpired:
             self.app.call_from_thread(self._write_log, "[red]Request timed out[/red]")
         except Exception as exc:

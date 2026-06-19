@@ -10,7 +10,6 @@ from ced.editor.widget import EnhancedCodeEditor, detect_language
 # They verify logic that is independent of the UI event loop.
 
 
-
 class TestEnhancedCodeEditor:
     def test_default_constructor(self) -> None:
         editor = EnhancedCodeEditor()

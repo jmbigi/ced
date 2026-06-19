@@ -71,6 +71,7 @@ class TestKeybindingManager:
     def test_override(self) -> None:
         mgr = KeybindingManager()
         from textual.binding import Binding
+
         custom = Binding("ctrl+y", "test_action", "Test")
         mgr.override("test_action", custom)
         actions = {b.action for b in mgr.bindings}
@@ -79,10 +80,9 @@ class TestKeybindingManager:
     def test_remove_override(self) -> None:
         mgr = KeybindingManager()
         from textual.binding import Binding
+
         custom = Binding("ctrl+y", "test_action", "Test")
         mgr.override("test_action", custom)
         mgr.remove_override("test_action")
         actions = {b.action for b in mgr.bindings}
         assert "test_action" not in actions
-
-

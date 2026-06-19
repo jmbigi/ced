@@ -167,14 +167,28 @@ class Ced(App):
 
     def _update_help_bar(self) -> None:
         key_map = {
-            "ctrl+q": "^Q", "ctrl+s": "^S", "ctrl+p": "^P", "ctrl+f": "^F",
-            "ctrl+b": "^B", "ctrl+n": "^N", "ctrl+w": "^W", "ctrl+h": "^H",
-            "ctrl+j": "^J", "ctrl+o": "^O", "ctrl+x": "^X", "ctrl+g": "^G",
-            "ctrl+z": "^Z", "ctrl+y": "^Y",
-            "ctrl+grave_accent": "GRV", "ctrl+shift+tab": "S-TAB",
-            "ctrl+tab": "TAB", "ctrl+shift+p": "S-P",
-            "ctrl+shift+f": "S-F", "ctrl+x ctrl+s": "C-x C-s",
-            "ctrl+x ctrl+f": "C-x C-f", "ctrl+x ctrl+c": "C-x C-c",
+            "ctrl+q": "^Q",
+            "ctrl+s": "^S",
+            "ctrl+p": "^P",
+            "ctrl+f": "^F",
+            "ctrl+b": "^B",
+            "ctrl+n": "^N",
+            "ctrl+w": "^W",
+            "ctrl+h": "^H",
+            "ctrl+j": "^J",
+            "ctrl+o": "^O",
+            "ctrl+x": "^X",
+            "ctrl+g": "^G",
+            "ctrl+z": "^Z",
+            "ctrl+y": "^Y",
+            "ctrl+grave_accent": "GRV",
+            "ctrl+shift+tab": "S-TAB",
+            "ctrl+tab": "TAB",
+            "ctrl+shift+p": "S-P",
+            "ctrl+shift+f": "S-F",
+            "ctrl+x ctrl+s": "C-x C-s",
+            "ctrl+x ctrl+f": "C-x C-f",
+            "ctrl+x ctrl+c": "C-x C-c",
         }
         shortcuts = []
         seen = set()
@@ -290,9 +304,7 @@ class Ced(App):
             editor = self.query_one("#editor", EditorArea)
             editor.open_file(path)
 
-    def on_search_bar_search_requested(
-        self, event: SearchBar.SearchRequested
-    ) -> None:
+    def on_search_bar_search_requested(self, event: SearchBar.SearchRequested) -> None:
         event.stop()
         editor = self.query_one("#editor", EditorArea)
         active = editor.get_active_editor()
@@ -318,7 +330,7 @@ class Ced(App):
                 idx = active.text.lower().find(event.find.lower())
                 if idx >= 0:
                     before = active.text[:idx]
-                    after = active.text[idx + len(event.find):]
+                    after = active.text[idx + len(event.find) :]
                     active.text = before + event.replace + after
                     line = before.count("\n")
                     col = idx - before.rfind("\n") - 1
