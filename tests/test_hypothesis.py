@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from hypothesis import assume, given, strategies as st
+from hypothesis import assume, given, settings, strategies as st
 from hypothesis.stateful import RuleBasedStateMachine, rule
 
 from ced.config import Config, EditorConfig, KeybindingConfig, OpenCodeConfig, ThemeConfig
@@ -10,12 +10,14 @@ from ced.editor.buffer import Buffer, BufferManager
 from ced.commands.registry import Command, CommandRegistry
 
 
+@settings(max_examples=2000)
 @given(st.integers(min_value=1, max_value=100))
 def test_buffer_name_always_string(tab_size: int) -> None:
     cfg = EditorConfig(tab_size=tab_size)
     assert cfg.tab_size == tab_size
 
 
+@settings(max_examples=2000)
 @given(st.text())
 def test_buffer_name_is_never_none(name: str) -> None:
     assume(name)
@@ -24,6 +26,7 @@ def test_buffer_name_is_never_none(name: str) -> None:
     assert isinstance(buf.name, str)
 
 
+@settings(max_examples=1000)
 @given(st.lists(st.text(min_size=1, max_size=20), min_size=0, max_size=10))
 def test_buffer_manager_add_and_count(names: list[str]) -> None:
     bm = BufferManager()
