@@ -151,6 +151,8 @@ class TestMainModule:
         assert result.returncode == 0
 
 
+
+
 class TestDetectDarkModeWinreg:
     def test_winreg_success_dark(self) -> None:
         """Windows registry path returns 0 (dark mode)."""
