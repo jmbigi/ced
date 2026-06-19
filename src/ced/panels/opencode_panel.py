@@ -35,8 +35,16 @@ class OpenCodePanel(Widget):
 
     OpenCodePanel Input {
         dock: bottom;
+        width: 100%;
         height: 1;
         margin: 0 1 1 1;
+        background: $boost;
+        color: $text;
+    }
+
+    OpenCodePanel Input:focus {
+        background: $surface;
+        color: $text;
     }
     """
 
