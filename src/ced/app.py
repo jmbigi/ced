@@ -267,19 +267,24 @@ class Ced(App):
         if not editor.save_active():
             self.notify("Cannot save: file has no path", severity="warning", timeout=5)
 
-    async def action_close_tab(self) -> None:
+    def action_close_tab(self) -> None:
         editor = self.query_one("#editor", EditorArea)
         buf = editor.buffers.active_buffer
         if buf and buf.is_modified:
-            result = await self.push_screen(
+
+            def _on_confirm(result: bool) -> None:
+                if result:
+                    editor.close_active()
+
+            self.push_screen(
                 ConfirmScreen(
                     f"'{buf.name}' has unsaved changes. Close anyway?",
                     title="Unsaved Changes",
-                )
+                ),
+                _on_confirm,
             )
-            if not result:
-                return
-        editor.close_active()
+        else:
+            editor.close_active()
 
     def action_open_file(self) -> None:
         self.query_one("#file-tree", FileTreePanel).focus()

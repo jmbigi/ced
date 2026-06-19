@@ -191,9 +191,18 @@ class EditorArea(Widget):
     def close_active(self) -> None:
         tabs = self.query_one(TabbedContent)
         active = tabs.active
-        if active in ("", "tab_untitled", None):
+        if active in ("", None):
             return
         name = active.removeprefix("tab_")
+        # Si es la última pestaña, no la cerramos sino que reseteamos
+        if len(self._tab_ids) <= 1:
+            editor = self._editors.get(name)
+            if editor:
+                editor.text = ""
+            buf = self.buffers.active_buffer
+            if buf:
+                buf.mark_saved()
+            return
         self.buffers.close_active()
         tabs.remove_pane(active)
         self._tab_ids.remove(active)
