@@ -92,7 +92,6 @@ async def test_editor_area_close_active() -> None:
     async with app.run_test() as pilot:
         await pilot.pause()
         editor = app.query_one("#editor")
-        count = editor.buffers.count
         active = editor.buffers.active_buffer
         assert active is not None
         active.mark_modified()

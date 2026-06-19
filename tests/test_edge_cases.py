@@ -1,12 +1,9 @@
 from __future__ import annotations
 
-import os
 import sys
 import subprocess
 from pathlib import Path
-from unittest.mock import MagicMock, patch
-
-import pytest
+from unittest.mock import patch
 
 from ced.editor.buffer import Buffer, BufferManager
 from ced.panels.editor_area import EditorArea

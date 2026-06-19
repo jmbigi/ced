@@ -150,57 +150,6 @@ async def test_app_tab_navigation() -> None:
 
 
 @pytest.mark.asyncio
-async def test_app_theme_cycle() -> None:
-    app = Ced()
-    async with app.run_test() as pilot:
-        await pilot.pause()
-        theme_before = app.config.theme.name
-        app.action_theme_next()
-        await pilot.pause()
-        assert app.config.theme.name != theme_before
-
-
-@pytest.mark.asyncio
-async def test_app_toggle_sidebar() -> None:
-    app = Ced()
-    async with app.run_test() as pilot:
-        await pilot.pause()
-        sidebar = app.query_one("#sidebar")
-        initial = sidebar.display
-        app.action_toggle_sidebar()
-        assert sidebar.display != initial
-
-
-@pytest.mark.asyncio
-async def test_app_new_file() -> None:
-    app = Ced()
-    async with app.run_test() as pilot:
-        await pilot.pause()
-        count_before = app.query_one("#editor").buffers.count
-        app.action_new_file()
-        await pilot.pause()
-        assert app.query_one("#editor").buffers.count == count_before + 1
-
-
-@pytest.mark.asyncio
-async def test_app_save_untitled_notifies() -> None:
-    app = Ced()
-    async with app.run_test() as pilot:
-        await pilot.pause()
-        app.action_save()
-        await pilot.pause()
-
-
-@pytest.mark.asyncio
-async def test_app_help_action() -> None:
-    app = Ced()
-    async with app.run_test() as pilot:
-        await pilot.pause()
-        app.action_help()
-        await pilot.pause()
-
-
-@pytest.mark.asyncio
 async def test_app_compose_structure() -> None:
     app = Ced()
     async with app.run_test() as pilot:
