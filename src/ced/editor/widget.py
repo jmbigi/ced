@@ -152,5 +152,6 @@ class EnhancedCodeEditor(TextArea):
     def save_as(self, path: Path | str) -> None:
         """Write editor content to *path* and update the file path."""
         p = self._resolve_path(path)
+        p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(self.text, encoding="utf-8")
         self.file_path = p
