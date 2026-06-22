@@ -2,13 +2,16 @@ from __future__ import annotations
 
 import asyncio
 import os
-import pty
 import signal
 import struct
-import termios
-import fcntl
+import sys
 
 import pyte
+
+if sys.platform != "win32":
+    import fcntl
+    import pty
+    import termios
 
 from textual.events import Key
 from textual.strip import Strip
@@ -81,7 +84,7 @@ class TerminalPanel(Widget):
 
     def _start_shell(self) -> None:
         """Fork a shell process in a PTY."""
-        if not hasattr(os, "fork"):
+        if "pty" not in sys.modules:
             self._running = False
             return
         if not os.path.isfile(self._shell) or not os.access(self._shell, os.X_OK):
@@ -105,9 +108,12 @@ class TerminalPanel(Widget):
 
     def _set_size(self, rows: int, cols: int) -> None:
         """Send window size change to the child process."""
-        if self._fd is not None:
+        if self._fd is not None and "fcntl" in sys.modules:
             packed = struct.pack("HHHH", rows, cols, 0, 0)
-            fcntl.ioctl(self._fd, termios.TIOCSWINSZ, packed)
+            try:
+                fcntl.ioctl(self._fd, termios.TIOCSWINSZ, packed)
+            except OSError:
+                pass
 
     def _on_pty_read(self) -> None:
         """Called by the event loop when data is available on the PTY."""
