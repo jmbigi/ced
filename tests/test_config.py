@@ -172,6 +172,12 @@ def test_merge_editor_clamps_font_size() -> None:
     assert cfg.editor.font_size == 12
 
 
+def test_merge_editor_string_tab_size_does_not_crash() -> None:
+    cfg = Config()
+    cfg._merge({"editor": {"tab_size": "four"}})
+    assert cfg.editor.tab_size == 4
+
+
 def test_merge_opencode_empty_path() -> None:
     cfg = Config()
     cfg._merge({"opencode": {"path": ""}})

@@ -114,9 +114,13 @@ class Config:
             for k, v in data["editor"].items():
                 if hasattr(self.editor, k):
                     setattr(self.editor, k, v)
-            if self.editor.tab_size < 1:
+            try:
+                if self.editor.tab_size < 1:
+                    self.editor.tab_size = 4
+                if self.editor.font_size < 8:
+                    self.editor.font_size = 12
+            except TypeError:
                 self.editor.tab_size = 4
-            if self.editor.font_size < 8:
                 self.editor.font_size = 12
         if "keybindings" in data:
             for k, v in data["keybindings"].items():
