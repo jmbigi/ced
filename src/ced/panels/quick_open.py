@@ -59,8 +59,14 @@ class QuickOpen(ModalScreen[Path | None]):
 
     def _scan_files_inner(self) -> list[Path]:
         excluded = {".venv", "__pycache__", ".git", "node_modules", ".ced"}
+        max_depth = 15
         files: list[Path] = []
+        root_str = str(self._root)
         for dirpath, dirnames, filenames in os.walk(self._root):
+            depth = dirpath[len(root_str):].count(os.sep)
+            if depth >= max_depth:
+                dirnames.clear()
+                continue
             dirnames[:] = [d for d in dirnames if d not in excluded]
             for fn in filenames:
                 full = Path(dirpath) / fn
