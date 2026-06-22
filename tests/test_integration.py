@@ -68,6 +68,19 @@ async def test_editor_area_open_file_not_found(tmp_path: Path) -> None:
 
 
 @pytest.mark.asyncio
+async def test_editor_area_open_is_directory(tmp_path: Path) -> None:
+    """Opening a directory should not crash."""
+    app = Ced()
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        editor = app.query_one("#editor")
+        count = editor.buffers.count
+        editor.open_file(tmp_path)
+        await pilot.pause()
+        assert editor.buffers.count == count
+
+
+@pytest.mark.asyncio
 async def test_editor_area_save_active(tmp_path: Path) -> None:
     dest = tmp_path / "saved.py"
     dest.write_text("")

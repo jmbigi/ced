@@ -129,7 +129,7 @@ class EditorArea(Widget):
                 indent_width=self._editor_settings.indent_width,
             )
             editor.load_file(path)
-        except (PermissionError, FileNotFoundError) as exc:
+        except OSError as exc:
             self.notify(f"Cannot open {path.name}: {exc}", severity="error", timeout=5)
             self.buffers.close_active()
             return
