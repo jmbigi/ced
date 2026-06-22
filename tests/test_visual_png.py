@@ -100,10 +100,22 @@ def _capture_ced_window(display: str, png_path: str | Path) -> bool:
     return False
 
 
+_REAL_DISPLAY = os.environ.get("DISPLAY") in (":0", ":0.0")
+
+
+def _assert_safe_display() -> None:
+    if _REAL_DISPLAY:
+        raise RuntimeError(
+            "visual tests would type into your real display! "
+            "Run with DISPLAY unset or inside Xvfb."
+        )
+
+
 @pytest.mark.visual
 class TestVisualPNG:
     @pytest.fixture(autouse=True)
     def _xvfb(self) -> None:
+        _assert_safe_display()
         self.v = Xvfb(width=1280, height=800)
         self.v.start()
         self.display = f":{self.v.new_display}"

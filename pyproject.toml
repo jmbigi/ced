@@ -27,6 +27,7 @@ ignore = ["E501"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+addopts = "-m 'not visual'"
 filterwarnings = [
     "ignore:coroutine 'DirectoryTree\\.watch_path' was never awaited:RuntimeWarning",
     "ignore:coroutine 'Input\\.action_submit' was never awaited:RuntimeWarning",
