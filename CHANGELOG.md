@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.2.1] — 2026-06-22
+
+### Added
+- `Config._merge()`: re-validación de `tab_size`, `font_size`, `opencode.path` tras merge
+- `save_file()`/`save_as()`: creación automática de directorio padre via `mkdir(parents=True)`
+- `Config.load()`: tolera TOML inválido o archivo corrupto (catch TOMLDecodeError)
+- `_assert_safe_display()`: protección contra ejecución de tests visuales en display real
+- Marcardor `@pytest.mark.visual` en todos los tests que usan pyautogui/cv2
+- `addopts = "-m 'not visual'"` en pyproject.toml: tests peligrosos no se ejecutan por defecto
+- Tests unitarios para i18n (5 tests), merge validation (4 tests), path creation (2 tests)
+
+### Fixed
+- `test_opencode_worker_paths`: mi rewrite de opencode_panel.py eliminó `_write_log()` y `_check_opencode()`
+- `test_editor_close_active_normal`: solo 1 tab entraba en reset branch y no eliminaba tab
+- `test_config.py`: múltiples tests rotos por cambios en config.py (restaurada lógica original)
+- `.gitignore`: `__snapshots__/` ignoraba TODOS los baselines; cambiado a `__snapshots__/__new__/`
+- `keybindings/manager.py`: mi rewrite usó `get_preset()` que nunca retorna None (fallback a vscode)
+- `commands/registry.py`: mi rewrite eliminó `difflib.SequenceMatcher` y `*args, **kwargs` en execute()
+- `themes/manager.py`: mi rewrite usó `sys.platform` pero tests parchean `os.name`
+- `themes/manager.py`: `THEMES` renombrado a `_THEMES` rompió import en tests
+- `version fallback`: `__init__.py` retornaba "0.1.0" en vez de "0.2.0"
+- `open_file()`: atrapaba solo `PermissionError`/`FileNotFoundError`, no `IsADirectoryError` (OSError genérico)
+- Tests visuales (`test_visual_png.py:145`): `pyautogui.write("def f():\n    pass\n")` se ejecutaba en display real
+
 ## [0.2.0] — 2026-06-22
 
 ### Added
