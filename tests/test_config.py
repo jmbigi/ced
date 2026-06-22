@@ -182,3 +182,21 @@ def test_merge_opencode_empty_path() -> None:
     cfg = Config()
     cfg._merge({"opencode": {"path": ""}})
     assert cfg.opencode.path == "opencode"
+
+
+def test_merge_section_not_dict_does_not_crash() -> None:
+    cfg = Config()
+    cfg._merge({"theme": "not a dict"})
+    assert cfg.theme.mode == "auto"
+    assert cfg.theme.name == "monokai"
+    cfg._merge({"editor": 42})
+    assert cfg.editor.tab_size == 4
+    cfg._merge({"keybindings": None})
+    assert cfg.keybindings.preset == "vscode"
+
+
+def test_merge_section_static_method() -> None:
+    assert Config._merge_section({"a": 1}) == {"a": 1}
+    assert Config._merge_section("") == {}
+    assert Config._merge_section(None) == {}
+    assert Config._merge_section(42) == {}
