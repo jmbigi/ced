@@ -125,9 +125,11 @@ def test_editor_close_active_empty_string() -> None:
 
 def test_editor_close_active_normal() -> None:
     ea = EditorArea()
-    ea._tab_ids = ["tab_test"]
+    ea._tab_ids = ["tab_test", "tab_other"]
     ea._editors["test"] = MagicMock()
+    ea._editors["other"] = MagicMock()
     ea.buffers.add(Path("/tmp/test.py"))
+    ea.buffers.add(Path("/tmp/other.py"))
     mock_tabs = MagicMock()
     mock_tabs.active = "tab_test"
     with patch.object(ea, "query_one", return_value=mock_tabs):

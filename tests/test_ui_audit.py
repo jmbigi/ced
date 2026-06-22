@@ -12,14 +12,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 import pytest
-from rich.text import Text
 from textual.app import App
 from textual.widget import Widget
 from textual.widgets import (
-    TextArea, DirectoryTree, Input, Button, Label,
-    Static, TabbedContent, TabPane, ListView, RichLog,
+    TextArea, Input, Button, Label,
+    Static, TabbedContent, RichLog,
 )
-from textual.containers import Horizontal, Vertical
 
 from ced.app import Ced
 
@@ -331,7 +329,7 @@ async def test_ui_audit_completo(debug_ui_events: DebugUIEventHandler | None):
         src.unlink()
 
         # ── 5. Reporte de incidencias ───────────────────────────────────
-        print(f"\n═══ REPORTE DE INCIDENCIAS ═══")
+        print("\n═══ REPORTE DE INCIDENCIAS ═══")
         if _issues:
             print(f"\n⚠ {len(_issues)} incidencia(s) encontrada(s):")
             for iss in _issues:

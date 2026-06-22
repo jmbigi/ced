@@ -13,16 +13,13 @@ Niveles:
 from __future__ import annotations
 
 import csv
-import io
 import json
-import os
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from _pytest.config import Config
-    from _pytest.nodes import Item
 
 
 DEBUG_DIR = Path(".debug_ui_events")

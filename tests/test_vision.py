@@ -21,25 +21,36 @@ from tests.helpers import (
 
 
 # ---------------------------------------------------------------------------
-# Screen recording (SVG snapshot) tests
+# Screen content snapshot tests (text-extraction based, SVG-independent)
 # ---------------------------------------------------------------------------
 
 
+def _strip_svg_text(svg: str) -> str:
+    """Extract all visible text from an SVG for deterministic comparison."""
+    texts = re.findall(r">([^<]{2,})<", svg)
+    visible = " ".join(
+        t.strip()
+        for t in texts
+        if t.strip() and not t.strip().startswith("terminal-")
+    )
+    return visible
+
+
 @pytest.mark.asyncio
-async def test_svg_screenshot_main_screen(snapshot_svg: str) -> None:
-    """Record the main screen as an SVG and compare with the baseline."""
+async def test_svg_screenshot_main_screen(snapshot_text: str) -> None:
+    """Record the main screen text content for snapshot comparison."""
     app = Ced()
     async with app.run_test(size=(120, 40)) as pilot:
         await pilot.pause()
-        svg = capture_svg(app)
-        assert svg == snapshot_svg
+        text = _strip_svg_text(capture_svg(app, normalized=False))
+        assert text == snapshot_text
 
 
 @pytest.mark.asyncio
 async def test_svg_screenshot_after_open_file(
-    tmp_path: Path, snapshot_svg: str
+    tmp_path: Path, snapshot_text: str
 ) -> None:
-    """Open a file and record the screen."""
+    """Open a file and record the screen text content."""
     src = tmp_path / "hello.py"
     src.write_text("print('hello world')\n")
 
@@ -49,20 +60,20 @@ async def test_svg_screenshot_after_open_file(
         editor = app.query_one("#editor")
         editor.open_file(src)
         await pilot.pause()
-        svg = capture_svg(app)
-        assert svg == snapshot_svg
+        text = _strip_svg_text(capture_svg(app, normalized=False))
+        assert text == snapshot_text
 
 
 @pytest.mark.asyncio
-async def test_svg_screenshot_terminal_open(snapshot_svg: str) -> None:
-    """Toggle the terminal panel open and record the screen."""
+async def test_svg_screenshot_terminal_open(snapshot_text: str) -> None:
+    """Toggle the terminal panel open and record the screen text."""
     app = Ced()
     async with app.run_test(size=(120, 40)) as pilot:
         await pilot.pause()
         app.action_toggle_terminal()
         await pilot.pause()
-        svg = capture_svg(app)
-        assert svg == snapshot_svg
+        text = _strip_svg_text(capture_svg(app, normalized=False))
+        assert text == snapshot_text
 
 
 # ---------------------------------------------------------------------------

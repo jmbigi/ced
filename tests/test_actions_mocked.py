@@ -134,28 +134,20 @@ def test_action_close_tab():
 
 
 def test_action_close_tab_modified():
-    import asyncio
-    from unittest.mock import AsyncMock
-
     app = Ced()
     mock_editor = MockEditorArea()
     mock_editor.buffers.active_buffer.is_modified = True
     with patch.object(app, "query_one", return_value=mock_editor):
-        app.confirm = AsyncMock(return_value=True)
-        asyncio.run(app.action_close_tab())
+        app.action_close_tab()
 
 
 def test_action_close_tab_modified_cancelled():
-    import asyncio
-    from unittest.mock import AsyncMock
-
     app = Ced()
     mock_editor = MockEditorArea()
     mock_editor.buffers.active_buffer.is_modified = True
     with patch.object(app, "query_one", return_value=mock_editor):
-        app.confirm = AsyncMock(return_value=False)
         with patch.object(mock_editor, "close_active") as mock_close:
-            asyncio.run(app.action_close_tab())
+            app.action_close_tab()
             mock_close.assert_not_called()
 
 

@@ -19,3 +19,6 @@ build/
 __snapshots__/
 snapshots/
 .debug_ui_events/
+
+# Test artifact images
+*.png

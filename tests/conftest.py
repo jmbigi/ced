@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Generator
+from typing import TYPE_CHECKING, Generator
 
 import pytest
 
@@ -9,7 +9,6 @@ from ced.app import Ced
 if TYPE_CHECKING:
     from syrupy import SnapshotAssertion
     from _pytest.config import Config
-    from _pytest.nodes import Item
 
     from tests.debug_ui_events import DebugUIEventHandler
 
@@ -33,11 +32,6 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 @pytest.fixture
 def app_cls() -> type[Ced]:
     return Ced
-
-
-@pytest.fixture
-def snapshot_svg(snapshot: SnapshotAssertion):
-    return snapshot
 
 
 @pytest.fixture
