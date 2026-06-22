@@ -98,6 +98,10 @@ class Config:
                 pass
         return cfg
 
+    @staticmethod
+    def _merge_section(section: object) -> dict:
+        return section if isinstance(section, dict) else {}
+
     def _merge(self, data: dict) -> None:
         """Merge a parsed TOML dict into the current config.
 
@@ -105,13 +109,13 @@ class Config:
         (clamping, fallback defaults) so invalid TOML values are corrected.
         """
         if "theme" in data:
-            for k, v in data["theme"].items():
+            for k, v in self._merge_section(data["theme"]).items():
                 if hasattr(self.theme, k):
                     setattr(self.theme, k, v)
         if self.theme.mode not in VALID_THEME_MODES:
             self.theme.mode = "auto"
         if "editor" in data:
-            for k, v in data["editor"].items():
+            for k, v in self._merge_section(data["editor"]).items():
                 if hasattr(self.editor, k):
                     setattr(self.editor, k, v)
             try:
@@ -123,13 +127,13 @@ class Config:
                 self.editor.tab_size = 4
                 self.editor.font_size = 12
         if "keybindings" in data:
-            for k, v in data["keybindings"].items():
+            for k, v in self._merge_section(data["keybindings"]).items():
                 if hasattr(self.keybindings, k):
                     setattr(self.keybindings, k, v)
         if self.keybindings.preset not in VALID_KEYBINDING_PRESETS:
             self.keybindings.preset = "vscode"
         if "opencode" in data:
-            for k, v in data["opencode"].items():
+            for k, v in self._merge_section(data["opencode"]).items():
                 if hasattr(self.opencode, k):
                     setattr(self.opencode, k, v)
             if not self.opencode.path:
