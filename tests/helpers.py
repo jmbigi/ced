@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import io
-import re
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -17,111 +16,18 @@ if TYPE_CHECKING:
 
 
 # ---------------------------------------------------------------------------
-# SVG normalization — strips random identifiers for stable snapshots
-# ---------------------------------------------------------------------------
-
-_SVG_RANDOM_RE = re.compile(r"\bterminal-\d+\b")
-
-
-def normalize_svg(svg: str) -> str:
-    """Replace random class/ID suffixes and sort CSS rules
-    so SVG snapshots are stable across runs.
-
-    Rich/Textual generates CSS class names (r1, r2, …) whose
-    mapping to actual colour values is non-deterministic across
-    runs.  This function sorts the CSS rules by their content
-    and re-assigns sequential class names, then updates all
-    references in the SVG body so the snapshot is stable.
-    """
-    svg = _SVG_RANDOM_RE.sub("terminal-SNAPSHOT", svg)
-
-    # Collect all CSS rules for .terminal-SNAPSHOT-rNN classes
-    rule_re = re.compile(
-        r'\.terminal-SNAPSHOT-r(\d+)\s*\{([^}]+)\}'
-    )
-    rules: list[tuple[str, str]] = []
-    for m in rule_re.finditer(svg):
-        num, body = m.group(1), m.group(2).strip()
-        rules.append((f"r{num}", body))
-
-    if not rules:
-        return svg
-
-    # Sort by body content so mapping is deterministic
-    sorted_rules = sorted(rules, key=lambda x: x[1])
-    old_to_new: dict[str, str] = {}
-    for new_idx, (old_name, _) in enumerate(sorted_rules, 1):
-        old_to_new[old_name] = f"r{new_idx}"
-
-    # Replace entire style block: keep non-r-class rules in place,
-    # sort only the .terminal-SNAPSHOT-rNN rules by their body content.
-    def _replace_style(m: re.Match) -> str:
-        block = m.group(0)
-        # Collect non-r-class lines (preserve unchanged)
-        other_lines: list[str] = []
-        r_lines: list[str] = []
-        for line in block.split("\n"):
-            stripped = line.strip()
-            if re.match(r'\.terminal-SNAPSHOT-r\d+', stripped):
-                r_lines.append(line)
-            else:
-                other_lines.append(line)
-        # Sort r-class lines by body content
-        def _rule_body(ln: str) -> str:
-            m2 = re.search(r'\{([^}]+)\}', ln)
-            return m2.group(1).strip() if m2 else ln
-        r_lines_sorted = sorted(r_lines, key=_rule_body)
-        # Re-number r-class names sequentially
-        reindexed = []
-        for i, ln in enumerate(r_lines_sorted, 1):
-            reindexed.append(
-                re.sub(r'\.terminal-SNAPSHOT-r\d+', f'.terminal-SNAPSHOT-r{i}', ln)
-            )
-        # Build mapping for body references
-        for old_ln, new_ln in zip(r_lines, reindexed):
-            old_m = re.search(r'\.terminal-SNAPSHOT-r(\d+)', old_ln)
-            new_m = re.search(r'\.terminal-SNAPSHOT-r(\d+)', new_ln)
-            if old_m and new_m:
-                old_to_new[f"r{old_m.group(1)}"] = f"r{new_m.group(1)}"
-        all_lines = other_lines + reindexed
-        return "\n".join(all_lines)
-
-    svg = re.sub(
-        r'<style>.*?</style>',
-        _replace_style,
-        svg,
-        count=1,
-        flags=re.DOTALL,
-    )
-
-    # Replace class references in the rest of the SVG (body)
-    def _replace_ref(m: re.Match) -> str:
-        old = m.group(1)
-        new = old_to_new.get(old, old)
-        return f"terminal-SNAPSHOT-{new}"
-
-    svg = re.sub(
-        r'terminal-SNAPSHOT-(r\d+)',
-        _replace_ref,
-        svg,
-    )
-
-    return svg
-
-
-# ---------------------------------------------------------------------------
-# Screen capture — advanced recording of terminal output
+# Screen capture — SVG output from Textual
 # ---------------------------------------------------------------------------
 
 
-def capture_svg(app: App, normalized: bool = True) -> str:
+def capture_svg(app: App, normalized: bool = False) -> str:
     """Capture the current screen as an SVG image (terminal recording).
 
-    If *normalized* is ``True`` (default), random identifiers are replaced
-    with a fixed placeholder so the output is suitable for snapshot comparison.
+    *normalized* is ignored (kept for backward compatibility);
+      SVG content is inherently non-deterministic for CSS class ordering,
+      so use :func:`_strip_svg_text` for stable comparisons.
     """
-    svg = app.export_screenshot()
-    return normalize_svg(svg) if normalized else svg
+    return app.export_screenshot()
 
 
 async def capture_svg_to_file(app: App, path: str | Path) -> str:

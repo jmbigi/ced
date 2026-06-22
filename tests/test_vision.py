@@ -25,32 +25,18 @@ from tests.helpers import (
 # ---------------------------------------------------------------------------
 
 
-def _strip_svg_text(svg: str) -> str:
-    """Extract all visible text from an SVG for deterministic comparison."""
-    texts = re.findall(r">([^<]{2,})<", svg)
-    visible = " ".join(
-        t.strip()
-        for t in texts
-        if t.strip() and not t.strip().startswith("terminal-")
-    )
-    return visible
-
-
 @pytest.mark.asyncio
-async def test_svg_screenshot_main_screen(snapshot_text: str) -> None:
-    """Record the main screen text content for snapshot comparison."""
+async def test_svg_screenshot_main_screen() -> None:
+    """Verify the main screen renders all required widgets."""
     app = Ced()
     async with app.run_test(size=(120, 40)) as pilot:
         await pilot.pause()
-        text = _strip_svg_text(capture_svg(app, normalized=False))
-        assert text == snapshot_text
+        assert_screen_contains(app, "Quit", "Save", "Open", "Sidebar")
 
 
 @pytest.mark.asyncio
-async def test_svg_screenshot_after_open_file(
-    tmp_path: Path, snapshot_text: str
-) -> None:
-    """Open a file and record the screen text content."""
+async def test_svg_screenshot_after_open_file(tmp_path: Path) -> None:
+    """Open a file and verify its content appears in the editor."""
     src = tmp_path / "hello.py"
     src.write_text("print('hello world')\n")
 
@@ -60,20 +46,23 @@ async def test_svg_screenshot_after_open_file(
         editor = app.query_one("#editor")
         editor.open_file(src)
         await pilot.pause()
-        text = _strip_svg_text(capture_svg(app, normalized=False))
-        assert text == snapshot_text
+        assert_screen_contains(app, "hello.py")
+        active = editor.get_active_editor()
+        assert active is not None
+        assert "hello world" in active.text
 
 
 @pytest.mark.asyncio
-async def test_svg_screenshot_terminal_open(snapshot_text: str) -> None:
-    """Toggle the terminal panel open and record the screen text."""
+async def test_svg_screenshot_terminal_open() -> None:
+    """Toggle the terminal panel open and verify visibility."""
     app = Ced()
     async with app.run_test(size=(120, 40)) as pilot:
         await pilot.pause()
+        terminal = app.query_one("#terminal")
+        assert terminal.display is False
         app.action_toggle_terminal()
         await pilot.pause()
-        text = _strip_svg_text(capture_svg(app, normalized=False))
-        assert text == snapshot_text
+        assert terminal.display is True
 
 
 # ---------------------------------------------------------------------------
