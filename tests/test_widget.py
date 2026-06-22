@@ -121,3 +121,12 @@ class TestEnhancedCodeEditor:
         editor.text = "data"
         editor.save_file()
         assert editor.file_path == dest
+
+    def test_save_file_creates_parent_dir(self, tmp_path: Path) -> None:
+        dest = tmp_path / "newdir" / "nested" / "out.txt"
+        editor = EnhancedCodeEditor(path=dest)
+        editor.text = "content"
+        result = editor.save_file()
+        assert result is True
+        assert dest.exists()
+        assert dest.read_text() == "content"

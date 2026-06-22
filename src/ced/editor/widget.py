@@ -145,6 +145,7 @@ class EnhancedCodeEditor(TextArea):
         """Write editor content to disk. Returns True on success."""
         if self._file_path is None:
             return False
+        self._file_path.parent.mkdir(parents=True, exist_ok=True)
         self._file_path.write_text(self.text, encoding="utf-8")
         return True
 
