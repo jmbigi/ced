@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from rich.text import Text
-from textual.widgets import TextArea
+from textual.widgets import Input, TextArea
 
 if TYPE_CHECKING:
     from textual.app import App
@@ -111,6 +111,10 @@ def extract_screen_text(app: App) -> str:
             text = widget.text.strip()
             if text:
                 lines.append(text)
+        elif isinstance(widget, Input):
+            text = widget.value.strip() or widget.placeholder.strip()
+            if text:
+                lines.append(text)
         else:
             try:
                 rendered = widget.render()
@@ -132,6 +136,8 @@ def extract_widget_text(widget: Widget) -> str:
     """Extract the plain text content of a single widget."""
     if isinstance(widget, TextArea):
         return widget.text
+    if isinstance(widget, Input):
+        return widget.value or widget.placeholder
     try:
         rendered = widget.render()
     except Exception:
