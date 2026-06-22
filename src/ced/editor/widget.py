@@ -86,6 +86,7 @@ LANGUAGE_MAP: dict[str, str] = {
 
 
 def detect_language(path: Path | str | None) -> str | None:
+    """Detect tree-sitter language name from a file path's extension."""
     if path is None:
         return None
     p = Path(path)
@@ -93,6 +94,8 @@ def detect_language(path: Path | str | None) -> str | None:
 
 
 class EnhancedCodeEditor(TextArea):
+    """A TextArea subclass with file I/O and automatic language detection."""
+
     def __init__(
         self,
         path: Path | str | None = None,
@@ -115,10 +118,12 @@ class EnhancedCodeEditor(TextArea):
 
     @property
     def file_path(self) -> Path | None:
+        """Return the path of the currently open file, or None."""
         return self._file_path
 
     @file_path.setter
     def file_path(self, value: Path | str | None) -> None:
+        """Set the file path and update the language mode."""
         self._file_path = Path(value) if value else None
         lang = detect_language(self._file_path)
         if lang:
@@ -130,18 +135,21 @@ class EnhancedCodeEditor(TextArea):
         return p
 
     def load_file(self, path: Path | str) -> None:
+        """Load file content from *path* into the editor."""
         p = self._resolve_path(path)
         self.file_path = p
         self.text = p.read_text(encoding="utf-8", errors="replace")
         self.history.clear()
 
     def save_file(self) -> bool:
+        """Write editor content to disk. Returns True on success."""
         if self._file_path is None:
             return False
         self._file_path.write_text(self.text, encoding="utf-8")
         return True
 
     def save_as(self, path: Path | str) -> None:
+        """Write editor content to *path* and update the file path."""
         p = self._resolve_path(path)
         p.write_text(self.text, encoding="utf-8")
         self.file_path = p

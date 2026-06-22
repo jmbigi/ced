@@ -1,50 +1,63 @@
 from __future__ import annotations
-from typing import Callable, Any
-from dataclasses import dataclass
-import difflib
+
+from typing import Callable
 
 
-@dataclass
 class Command:
-    id: str
-    description: str
-    handler: Callable[..., None]
-    category: str = "General"
+    """A registered command with id, description, handler, and category."""
+
+    def __init__(
+        self,
+        id: str,
+        description: str,
+        handler: Callable[[], None],
+        category: str = "App",
+    ) -> None:
+        self.id = id
+        self.description = description
+        self.handler = handler
+        self.category = category
 
 
 class CommandRegistry:
+    """Registry for commands that can be looked up and executed by id."""
+
     def __init__(self) -> None:
         self._commands: dict[str, Command] = {}
 
     def register(self, command: Command) -> None:
+        """Register a new command. Raises ValueError if id already exists."""
         if command.id in self._commands:
             raise ValueError(f"Command {command.id!r} already registered")
         self._commands[command.id] = command
 
     def register_many(self, *commands: Command) -> None:
+        """Register multiple commands at once."""
         for cmd in commands:
             self.register(cmd)
 
-    def execute(self, id: str, *args: Any, **kwargs: Any) -> None:
-        if id not in self._commands:
+    def execute(self, id: str) -> None:
+        """Execute the command with *id*. Raises KeyError if not found."""
+        cmd = self._commands.get(id)
+        if cmd is None:
             raise KeyError(f"Unknown command: {id}")
-        self._commands[id].handler(*args, **kwargs)
+        cmd.handler()
 
     def get(self, id: str) -> Command | None:
+        """Return the command for *id*, or None."""
         return self._commands.get(id)
 
     def all(self) -> list[Command]:
+        """Return all registered commands."""
         return list(self._commands.values())
 
-    def search(self, query: str) -> list[tuple[Command, float]]:
-        query = query.lower()
-        results: list[tuple[Command, float]] = []
-        for cmd in self._commands.values():
-            score = max(
-                difflib.SequenceMatcher(None, query, cmd.id.lower()).ratio(),
-                difflib.SequenceMatcher(None, query, cmd.description.lower()).ratio(),
-            )
-            if score > 0.3:
-                results.append((cmd, score))
-        results.sort(key=lambda x: x[1], reverse=True)
-        return results
+    def search(self, query: str) -> list[Command]:
+        """Fuzzy-search commands by id, description, or category."""
+        q = query.lower()
+        return [
+            cmd
+            for cmd in self._commands.values()
+            if q in cmd.id.lower()
+            or q in cmd.description.lower()
+            or q in cmd.category.lower()
+        ]
