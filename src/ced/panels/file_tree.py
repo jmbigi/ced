@@ -28,6 +28,8 @@ class FileTreePanel(DirectoryTree):
     ) -> None:
         event.stop()
         path = Path(event.path)
+        if not path.exists():
+            return
         if path.is_file():
             self.post_message(self.FileOpened(path))
 

@@ -81,8 +81,18 @@ class TerminalPanel(Widget):
 
     def _start_shell(self) -> None:
         """Fork a shell process in a PTY."""
-        pid, fd = pty.fork()
-        if pid == 0:  # pragma: no cover
+        if not hasattr(os, "fork"):
+            self._running = False
+            return
+        if not os.path.isfile(self._shell) or not os.access(self._shell, os.X_OK):
+            self._running = False
+            return
+        try:
+            pid, fd = pty.fork()
+        except (AttributeError, OSError, FileNotFoundError):
+            self._running = False
+            return
+        if pid == 0:
             os.environ.setdefault("TERM", "xterm-256color")
             os.execvp(self._shell, [self._shell])
         else:

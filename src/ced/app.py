@@ -336,7 +336,17 @@ class Ced(App):
     def action_save(self) -> None:
         editor = self.query_one("#editor", EditorArea)
         if not editor.save_active():
-            self.notify("Cannot save: file has no path", severity="warning", timeout=5)
+            active = editor.get_active_editor()
+            if active and active.file_path:
+                self.notify(
+                    f"Cannot save {active.file_path.name}: permission denied",
+                    severity="error", timeout=5,
+                )
+            else:
+                self.notify(
+                    "Cannot save: file has no path. Use Ctrl+Shift+S to save as.",
+                    severity="warning", timeout=5,
+                )
 
     def action_close_tab(self) -> None:
         editor = self.query_one("#editor", EditorArea)
