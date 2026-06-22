@@ -19,6 +19,8 @@ build/
 __snapshots__/__new__/
 snapshots/
 .debug_ui_events/
+.benchmarks/
+.hypothesis/
 
 # Test artifact images
 *.png
