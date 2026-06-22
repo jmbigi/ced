@@ -174,11 +174,40 @@ src/ced/
 │   └── manager.py       # Theme definitions + auto dark/light detection
 ```
 
+## Troubleshooting
+
+| Problem | Cause | Solution |
+|---------|-------|----------|
+| `ModuleNotFoundError: No module named 'pyte'` | Missing dependency | `pip install pyte` |
+| Terminal panel shows nothing on macOS | PTY fork not supported | Use Linux or WSL |
+| OpenCode panel says "opencode not found" | OpenCode CLI not installed | `pip install opencode` or set path in config |
+| File tree is empty | Directory has no readable files | Check permissions, excluded dirs |
+| `Ctrl+` doesn't toggle OpenCode | Terminal captures the key | Remap in config.toml |
+| Editor is slow with large files | No lazy loading yet | Use an external editor for >10MB files |
+
+## FAQ
+
+**Q: Is ced production-ready?**
+A: ced is alpha-quality. It works for everyday editing but may have rough edges. Backup important files.
+
+**Q: Can I use ced with Python 3.10 or older?**
+A: No, ced requires Python 3.11+ for `tomllib` and `removeprefix`.
+
+**Q: Does ced support plugins/extensions?**
+A: Not yet. The architecture supports it (modular panels, command registry) but no plugin API exists.
+
+**Q: Can I change colors beyond the 6 themes?**
+A: Yes, via `~/.config/ced/config.toml` — you can set custom theme variables in the `[theme]` section.
+
+**Q: How do I report a bug?**
+A: Open an issue at https://github.com/jmbigi/ced/issues
+
 ## Tech Stack
 - **Python** 3.11+
 - **Textual** 8.x — terminal UI framework
 - **tree-sitter** (via Textual) — syntax highlighting
 - **tomllib** (stdlib) — config parsing
+- **pyte** — terminal emulation for the PTY panel
 - **OpenCode** CLI (optional) — AI integration
 
 ## License

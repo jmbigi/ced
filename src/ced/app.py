@@ -221,15 +221,25 @@ class Ced(App):
         if self._is_mounted:
             self.refresh_bindings()
 
+    AUTOSAVE_INTERVAL = 300
+
     def on_mount(self) -> None:
         self._apply_theme()
         self._update_help_bar()
+        self.set_interval(self.AUTOSAVE_INTERVAL, self._autosave)
         if sys.platform != "win32":
             try:
                 loop = asyncio.get_running_loop()
                 loop.add_signal_handler(signal.SIGHUP, self.emergency_save_and_exit)
             except (ValueError, NotImplementedError):
                 pass
+
+    def _autosave(self) -> None:
+        editor = self.query_one("#editor", EditorArea)
+        for buf in editor.buffers:
+            if buf.is_modified:
+                editor.save_all_modified()
+                break
 
     def _apply_theme(self) -> None:
         mode: ThemeMode = self.config.theme.mode
