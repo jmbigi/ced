@@ -149,6 +149,41 @@ async def test_app_tab_navigation() -> None:
 
 
 @pytest.mark.asyncio
+async def test_app_autosave_interval() -> None:
+    app = Ced()
+    assert app.AUTOSAVE_INTERVAL == 300
+
+
+@pytest.mark.asyncio
+async def test_app_autosave_calls_save() -> None:
+    from unittest.mock import patch
+
+    app = Ced()
+    async with app.run_test() as pilot:
+        await pilot.pause()
+        editor = app.query_one("#editor")
+        buf = editor.buffers.active_buffer
+        buf.mark_modified()
+        with patch.object(editor, "save_all_modified") as mock_save:
+            app._autosave()
+            mock_save.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_app_autosave_on_mount() -> None:
+    from unittest.mock import patch
+
+    app = Ced()
+    with patch.object(app, "set_interval") as mock_set:
+        with patch.object(app, "_apply_theme"):
+            with patch.object(app, "_update_help_bar"):
+                app.on_mount()
+                mock_set.assert_called_once_with(
+                    app.AUTOSAVE_INTERVAL, app._autosave
+                )
+
+
+@pytest.mark.asyncio
 async def test_app_compose_structure() -> None:
     app = Ced()
     async with app.run_test() as pilot:
