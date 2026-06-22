@@ -27,4 +27,4 @@ def test_get_version_success() -> None:
 
 def test_get_version_fallback() -> None:
     with patch("ced.__init__._metadata_version", side_effect=Exception("fail")):
-        assert _get_version() == "0.1.0"
+        assert _get_version() == "0.2.0"

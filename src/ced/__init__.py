@@ -11,7 +11,7 @@ def _get_version() -> str:
     try:
         return _metadata_version("ced")
     except Exception:
-        return "0.1.0"
+        return "0.2.0"
 
 
 __version__ = _get_version()
