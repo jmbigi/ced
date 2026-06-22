@@ -4,10 +4,7 @@ from typing import TYPE_CHECKING, Generator
 
 import pytest
 
-from ced.app import Ced
-
 if TYPE_CHECKING:
-    from syrupy import SnapshotAssertion
     from _pytest.config import Config
 
     from tests.debug_ui_events import DebugUIEventHandler
@@ -27,16 +24,6 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         choices=["minimal", "standard", "verbose", "full"],
         help="UI event observability level (RR-81)",
     )
-
-
-@pytest.fixture
-def app_cls() -> type[Ced]:
-    return Ced
-
-
-@pytest.fixture
-def snapshot_text(snapshot: SnapshotAssertion):
-    return snapshot
 
 
 @pytest.fixture(autouse=True)
