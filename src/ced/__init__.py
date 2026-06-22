@@ -2,8 +2,9 @@ from importlib.metadata import version as _metadata_version
 
 from ced.app import Ced
 from ced.config import Config
+from ced.i18n import _, setup_i18n
 
-__all__ = ["Ced", "Config"]
+__all__ = ["Ced", "Config", "_", "setup_i18n"]
 
 
 def _get_version() -> str:

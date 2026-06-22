@@ -1,0 +1,149 @@
+# Spanish translations for ced
+# Copyright (C) 2026
+# This file is distributed under the AGPLv3 license.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: ced 0.2.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-22 10:00-0300\n"
+"PO-Revision-Date: 2026-06-22 10:00-0300\n"
+"Last-Translator: \n"
+"Language-Team: Spanish\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: src/ced/app.py:42
+msgid "ced"
+msgstr "ced"
+
+#: src/ced/app.py:43
+msgid "Terminal Code Editor"
+msgstr "Editor de código para terminal"
+
+#: src/ced/app.py:339
+msgid "Cannot save: file has no path. Use Ctrl+Shift+S to save as."
+msgstr "No se puede guardar: el archivo no tiene ruta. Use Ctrl+Shift+S para guardar como."
+
+#: src/ced/app.py:346
+msgid "Cannot save"
+msgstr "No se puede guardar"
+
+#: src/ced/app.py:475
+msgid "Theme:"
+msgstr "Tema:"
+
+#: src/ced/app.py:479
+msgid "Themes:"
+msgstr "Temas:"
+
+#: src/ced/app.py:493
+msgid "Keybindings:"
+msgstr "Atajos:"
+
+#: src/ced/app.py:497
+msgid "Presets:"
+msgstr "Perfiles:"
+
+#: src/ced/app.py:76
+msgid "Quit ced"
+msgstr "Salir de ced"
+
+#: src/ced/app.py:79
+msgid "Toggle sidebar visibility"
+msgstr "Mostrar/ocultar barra lateral"
+
+#: src/ced/app.py:85
+msgid "Toggle OpenCode panel"
+msgstr "Mostrar/ocultar panel OpenCode"
+
+#: src/ced/app.py:89
+msgid "Save current file"
+msgstr "Guardar archivo actual"
+
+#: src/ced/app.py:91
+msgid "Close current tab"
+msgstr "Cerrar pestaña actual"
+
+#: src/ced/app.py:94
+msgid "Open file from sidebar"
+msgstr "Abrir archivo desde la barra lateral"
+
+#: src/ced/app.py:96
+msgid "Create new file"
+msgstr "Crear nuevo archivo"
+
+#: src/ced/app.py:97
+msgid "Switch to next tab"
+msgstr "Ir a la siguiente pestaña"
+
+#: src/ced/app.py:99
+msgid "Switch to previous tab"
+msgstr "Ir a la pestaña anterior"
+
+#: src/ced/app.py:103
+msgid "Show command palette"
+msgstr "Mostrar paleta de comandos"
+
+#: src/ced/app.py:109
+msgid "Quick open file (Ctrl+P)"
+msgstr "Abrir archivo rápido (Ctrl+P)"
+
+#: src/ced/app.py:113
+msgid "Search in file"
+msgstr "Buscar en archivo"
+
+#: src/ced/app.py:116
+msgid "Search and replace"
+msgstr "Buscar y reemplazar"
+
+#: src/ced/app.py:122
+msgid "Jump to 2-character sequence"
+msgstr "Saltar a secuencia de 2 caracteres"
+
+#: src/ced/app.py:127
+msgid "Switch to next theme"
+msgstr "Cambiar al siguiente tema"
+
+#: src/ced/app.py:131
+msgid "List available themes"
+msgstr "Listar temas disponibles"
+
+#: src/ced/app.py:136
+msgid "Show help / command palette"
+msgstr "Mostrar ayuda / paleta de comandos"
+
+#: src/ced/app.py:140
+msgid "Switch to next keybinding preset"
+msgstr "Cambiar al siguiente perfil de atajos"
+
+#: src/ced/app.py:146
+msgid "List available keybinding presets"
+msgstr "Listar perfiles de atajos disponibles"
+
+#: src/ced/app.py:150
+msgid "Undo last change"
+msgstr "Deshacer último cambio"
+
+#: src/ced/app.py:151
+msgid "Redo last undone change"
+msgstr "Rehacer último cambio"
+
+#: src/ced/app.py:154
+msgid "Toggle terminal panel (Ctrl+T)"
+msgstr "Mostrar/ocultar panel de terminal (Ctrl+T)"
+
+#: src/ced/app.py:382
+msgid "Unsaved Changes"
+msgstr "Cambios sin guardar"
+
+#: src/ced/app.py:457
+msgid "Maximum tabs reached"
+msgstr "Máximo de pestañas alcanzado"
+
+#: src/ced/app.py:487
+msgid "Your theme"
+msgstr "Tu tema"

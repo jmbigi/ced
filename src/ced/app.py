@@ -14,6 +14,7 @@ from textual.containers import Horizontal, Vertical
 
 from ced.config import Config
 from ced.commands import CommandRegistry, Command
+from ced.i18n import _, setup_i18n
 from ced.panels.file_tree import FileTreePanel
 from ced.panels.editor_area import EditorArea, EditorSettings
 from ced.panels.opencode_panel import OpenCodePanel
@@ -65,6 +66,7 @@ class Ced(App):
 
     def __init__(self) -> None:
         super().__init__()
+        setup_i18n()
         self.config = Config.load()
         self.commands = CommandRegistry()
         self._keybinding_manager = KeybindingManager(self.config.keybindings.preset)
@@ -346,7 +348,7 @@ class Ced(App):
                 )
             else:
                 self.notify(
-                    "Cannot save: file has no path. Use Ctrl+Shift+S to save as.",
+                    _("Cannot save: file has no path. Use Ctrl+Shift+S to save as."),
                     severity="warning", timeout=5,
                 )
 
@@ -484,11 +486,11 @@ class Ced(App):
         next_theme = themes[(i + 1) % len(themes)]
         self.config.theme.name = next_theme
         self._apply_theme()
-        self.notify(f"Theme: {next_theme}")
+        self.notify(f"{_('Theme:')} {next_theme}")
 
     def action_theme_list(self) -> None:
         themes = ", ".join(list_themes())
-        self.notify(f"Themes: {themes}", timeout=5)
+        self.notify(f"{_('Themes:')} {themes}", timeout=5)
 
     def action_keybinding_next(self) -> None:
         presets = list_keybinding_presets()
@@ -502,7 +504,7 @@ class Ced(App):
         self.config.keybindings.preset = next_preset
         self._apply_keybindings()
         self._update_help_bar()
-        self.notify(f"Keybindings: {next_preset}")
+        self.notify(f"{_('Keybindings:')} {next_preset}")
 
     def action_keybinding_list(self) -> None:
         presets = ", ".join(list_keybinding_presets())
