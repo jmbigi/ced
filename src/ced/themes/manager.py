@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-import sys
 
 _THEMES: dict[str, dict[str, str]] = {
     "monokai": {
@@ -84,6 +83,8 @@ _THEMES: dict[str, dict[str, str]] = {
     },
 }
 
+THEMES = _THEMES
+
 
 def list_themes() -> list[str]:
     """Return the names of all available built-in themes."""
@@ -96,20 +97,21 @@ def detect_dark_mode() -> bool:
     Checks the COLORFGBG environment variable (Linux/macOS) or the
     Windows registry.  Returns True if dark mode is detected.
     """
-    if sys.platform == "win32":
-        try:
+    try:
+        if os.name == "nt":
             import winreg
             key = winreg.OpenKey(
                 winreg.HKEY_CURRENT_USER,
                 r"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize",
             )
-            value = winreg.QueryValueEx(key, "AppsUseLightTheme")[0]
-            winreg.CloseKey(key)
+            value, _ = winreg.QueryValueEx(key, "AppsUseLightTheme")
             return value == 0
-        except Exception:
-            return True
-    color = os.environ.get("COLORFGBG", "")
-    return "15;0" in color or not color
+        elif os.environ.get("COLORFGBG"):
+            bg = os.environ["COLORFGBG"].split(";")[-1]
+            return int(bg) < 8
+        return True
+    except Exception:
+        return True
 
 
 def get_theme_variables(name: str) -> dict[str, str]:

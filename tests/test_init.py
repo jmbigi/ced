@@ -14,7 +14,9 @@ def test_version_is_string() -> None:
 def test_all_exports() -> None:
     assert hasattr(ced, "Ced")
     assert hasattr(ced, "Config")
-    assert ced.__all__ == ["Ced", "Config"]
+    assert hasattr(ced, "_")
+    assert hasattr(ced, "setup_i18n")
+    assert ced.__all__ == ["Ced", "Config", "_", "setup_i18n"]
 
 
 def test_get_version_success() -> None:
