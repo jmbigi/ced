@@ -23,9 +23,9 @@ class ConfirmScreen(Screen[bool]):
         yield Static(self._title, id="confirm-title")
         yield Static(self._message, id="confirm-message")
         with Static(id="confirm-buttons"):
-            yield Button("Save", id="save", variant="primary", tooltip="Save changes")
-            yield Button("Discard", id="discard", variant="error", tooltip="Discard changes")
-            yield Button("Cancel", id="cancel", tooltip="Go back")
+            yield Button("Save", id="save", variant="primary")
+            yield Button("Discard", id="discard", variant="error")
+            yield Button("Cancel", id="cancel")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Dismiss with the button id as result."""
