@@ -124,8 +124,13 @@ class EnhancedCodeEditor(TextArea):
         if lang:
             self.language = lang
 
+    @staticmethod
+    def _resolve_path(path: Path | str) -> Path:
+        p = Path(path).resolve()
+        return p
+
     def load_file(self, path: Path | str) -> None:
-        p = Path(path)
+        p = self._resolve_path(path)
         self.file_path = p
         self.text = p.read_text(encoding="utf-8", errors="replace")
         self.history.clear()
@@ -137,6 +142,6 @@ class EnhancedCodeEditor(TextArea):
         return True
 
     def save_as(self, path: Path | str) -> None:
-        p = Path(path)
+        p = self._resolve_path(path)
         p.write_text(self.text, encoding="utf-8")
         self.file_path = p
