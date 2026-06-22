@@ -58,7 +58,7 @@ async def test_search_bar_input_submitted(tmp_path: Path) -> None:
         await pilot.pause()
         inp = app.query_one("#find-input")
         inp.value = "findable"
-        inp.action_submit()
+        await inp.action_submit()
         await pilot.pause()
 
 
