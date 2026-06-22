@@ -160,7 +160,7 @@ class Ced(App):
     def compose(self) -> ComposeResult:
         with Horizontal():
             with Vertical(id="sidebar"):
-                yield FileTreePanel(id="file-tree")
+                yield FileTreePanel(id="file-tree", tooltip="File tree sidebar (Ctrl+B)")
             with Vertical(id="editor-area"):
                 yield EditorArea(
                     editor_settings=EditorSettings(
@@ -169,16 +169,18 @@ class Ced(App):
                         indent_width=self.config.editor.tab_size,
                     ),
                     id="editor",
+                    tooltip="Code editor (Ctrl+N new file, Ctrl+S save)",
                 )
-                yield SearchBar(id="search-bar")
-                yield TerminalPanel(id="terminal")
+                yield SearchBar(id="search-bar", tooltip="Search in file (Ctrl+F)")
+                yield TerminalPanel(id="terminal", tooltip="Terminal panel (Ctrl+T)")
             with Vertical(id="opencode-panel"):
                 yield OpenCodePanel(
                     opencode_path=self.config.opencode.path,
                     auto_start=self.config.opencode.auto_start,
                     id="opencode",
+                    tooltip="OpenCode AI assistant (Ctrl+`)",
                 )
-        yield HelpBar(id="help-bar")
+        yield HelpBar(id="help-bar", tooltip="Keyboard shortcut bar")
 
     def _update_help_bar(self) -> None:
         key_map = {
