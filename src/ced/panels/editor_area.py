@@ -19,6 +19,9 @@ class EditorSettings:
     indent_width: int = 4
 
 
+MAX_TABS = 100
+
+
 class EditorArea(Widget):
     def __init__(
         self, editor_settings: EditorSettings | None = None, *args, **kwargs
@@ -63,6 +66,9 @@ class EditorArea(Widget):
         return f"editor_{self._sanitize_id(name)}"
 
     def new_file(self) -> None:
+        if len(self._tab_ids) >= MAX_TABS:
+            self.notify("Maximum tabs reached", severity="warning", timeout=3)
+            return
         self._tab_counter += 1
         name = f"untitled_{self._tab_counter}"
         safe_key = self._sanitize_id(name)
@@ -87,6 +93,9 @@ class EditorArea(Widget):
     def open_file(self, path: Path | str) -> None:
         if isinstance(path, str):
             path = Path(path)
+        if len(self._tab_ids) >= MAX_TABS:
+            self.notify("Maximum tabs reached", severity="warning", timeout=3)
+            return
         existing = self.buffers.get_by_path(path)
         if existing is not None:
             idx = next(
@@ -206,7 +215,6 @@ class EditorArea(Widget):
         if active in ("", None):
             return
         name = active.removeprefix("tab_")
-        # Si es la última pestaña, no la cerramos sino que reseteamos
         if len(self._tab_ids) <= 1:
             editor = self._editors.get(name)
             if editor:
