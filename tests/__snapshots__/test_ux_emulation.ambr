@@ -1,0 +1,4 @@
+# serializer version: 1
+# name: test_ux_snapshot_help_bar
+  ' ^Q Quit  ^B Sidebar  GRV OpenCode  ^S Save  ^W Close Tab  S-P Command Palette  ^P Quick Open  ^F Search  ^H Search & Replace  ^O Open File  ^N New File  ^Z Undo  ^Y Redo  ^T Terminal  TAB Next Tab  S-TAB Previous Tab  ^J Jump '
+# ---

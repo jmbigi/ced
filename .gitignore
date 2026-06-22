@@ -16,7 +16,7 @@ CED-CODING-STANDARDS.md
 dist/
 build/
 .coverage
-__snapshots__/
+__snapshots__/__new__/
 snapshots/
 .debug_ui_events/
 
