@@ -164,8 +164,8 @@ class Ced(App):
     def compose(self) -> ComposeResult:
         """Build the widget layout: sidebar, editor area, opencode panel, help bar."""
         with Horizontal():
-            with Vertical(id="sidebar"):
-                yield FileTreePanel(id="file-tree", tooltip="File tree sidebar (Ctrl+B)")
+            with Vertical(id="sidebar", tooltip="File explorer sidebar"):
+                yield FileTreePanel(id="file-tree", tooltip="Browse and open files (Ctrl+B)")
             with Vertical(id="editor-area"):
                 yield EditorArea(
                     editor_settings=EditorSettings(
