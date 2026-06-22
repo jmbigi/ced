@@ -134,3 +134,27 @@ def test_editor_config_invalid_font_size() -> None:
 def test_opencode_config_empty_path() -> None:
     cfg = OpenCodeConfig(path="")
     assert cfg.path == "opencode"
+
+
+def test_merge_editor_clamps_tab_size_zero() -> None:
+    cfg = Config()
+    cfg._merge({"editor": {"tab_size": 0}})
+    assert cfg.editor.tab_size == 4
+
+
+def test_merge_editor_clamps_tab_size_negative() -> None:
+    cfg = Config()
+    cfg._merge({"editor": {"tab_size": -5}})
+    assert cfg.editor.tab_size == 4
+
+
+def test_merge_editor_clamps_font_size() -> None:
+    cfg = Config()
+    cfg._merge({"editor": {"font_size": 1}})
+    assert cfg.editor.font_size == 12
+
+
+def test_merge_opencode_empty_path() -> None:
+    cfg = Config()
+    cfg._merge({"opencode": {"path": ""}})
+    assert cfg.opencode.path == "opencode"

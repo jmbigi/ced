@@ -92,7 +92,11 @@ class Config:
         return cfg
 
     def _merge(self, data: dict) -> None:
-        """Merge a parsed TOML dict into the current config."""
+        """Merge a parsed TOML dict into the current config.
+
+        After setting values from each section, re-applies validation
+        (clamping, fallback defaults) so invalid TOML values are corrected.
+        """
         if "theme" in data:
             for k, v in data["theme"].items():
                 if hasattr(self.theme, k):
@@ -103,6 +107,10 @@ class Config:
             for k, v in data["editor"].items():
                 if hasattr(self.editor, k):
                     setattr(self.editor, k, v)
+            if self.editor.tab_size < 1:
+                self.editor.tab_size = 4
+            if self.editor.font_size < 8:
+                self.editor.font_size = 12
         if "keybindings" in data:
             for k, v in data["keybindings"].items():
                 if hasattr(self.keybindings, k):
@@ -113,3 +121,5 @@ class Config:
             for k, v in data["opencode"].items():
                 if hasattr(self.opencode, k):
                     setattr(self.opencode, k, v)
+            if not self.opencode.path:
+                self.opencode.path = "opencode"
