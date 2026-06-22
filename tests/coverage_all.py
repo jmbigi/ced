@@ -42,7 +42,7 @@ import ced.__init__ as _ced_init
 from unittest.mock import patch
 
 with patch("ced.__init__._metadata_version", side_effect=Exception("fail")):
-    assert _ced_init._get_version() == "0.1.0"
+    assert _ced_init._get_version() == "0.2.0"
 
 # ── Unit-level coverage ──────────────────────────────────────────────────
 
