@@ -77,85 +77,85 @@ class Ced(App):
 
     def _register_builtin_commands(self) -> None:
         self.commands.register_many(
-            Command("app.quit", "Quit ced", self.action_quit, "App"),
+            Command("app.quit", _("Quit ced"), self.action_quit, "App"),
             Command(
                 "app.toggle_sidebar",
-                "Toggle sidebar visibility",
+                _("Toggle sidebar visibility"),
                 self.action_toggle_sidebar,
                 "View",
             ),
             Command(
                 "app.toggle_opencode",
-                "Toggle OpenCode panel",
+                _("Toggle OpenCode panel"),
                 self.action_toggle_opencode,
                 "View",
             ),
-            Command("app.save", "Save current file", self.action_save, "File"),
+            Command("app.save", _("Save current file"), self.action_save, "File"),
             Command(
-                "app.close_tab", "Close current tab", self.action_close_tab, "File"
+                "app.close_tab", _("Close current tab"), self.action_close_tab, "File"
             ),
             Command(
-                "app.open_file", "Open file from sidebar", self.action_open_file, "File"
+                "app.open_file", _("Open file from sidebar"), self.action_open_file, "File"
             ),
-            Command("app.new_file", "Create new file", self.action_new_file, "File"),
-            Command("app.next_tab", "Switch to next tab", self.action_next_tab, "File"),
+            Command("app.new_file", _("Create new file"), self.action_new_file, "File"),
+            Command("app.next_tab", _("Switch to next tab"), self.action_next_tab, "File"),
             Command(
-                "app.prev_tab", "Switch to previous tab", self.action_prev_tab, "File"
+                "app.prev_tab", _("Switch to previous tab"), self.action_prev_tab, "File"
             ),
             Command(
                 "app.command_palette",
-                "Show command palette",
+                _("Show command palette"),
                 self.action_command_palette,
                 "View",
             ),
             Command(
                 "app.quick_open",
-                "Quick open file (Ctrl+P)",
+                _("Quick open file (Ctrl+P)"),
                 self.action_quick_open,
                 "File",
             ),
-            Command("app.search", "Search in file", self.action_search, "Edit"),
+            Command("app.search", _("Search in file"), self.action_search, "Edit"),
             Command(
                 "app.search_replace",
-                "Search and replace",
+                _("Search and replace"),
                 self.action_search_replace,
                 "Edit",
             ),
             Command(
                 "app.jump_mode",
-                "Jump to 2-character sequence",
+                _("Jump to 2-character sequence"),
                 self.action_jump_mode,
                 "Edit",
             ),
             Command(
-                "app.theme_next", "Switch to next theme", self.action_theme_next, "View"
+                "app.theme_next", _("Switch to next theme"), self.action_theme_next, "View"
             ),
             Command(
                 "app.theme_list",
-                "List available themes",
+                _("List available themes"),
                 self.action_theme_list,
                 "View",
             ),
             Command(
-                "app.help", "Show help / command palette", self.action_help, "Help"
+                "app.help", _("Show help / command palette"), self.action_help, "Help"
             ),
             Command(
                 "app.keybinding_next",
-                "Switch to next keybinding preset",
+                _("Switch to next keybinding preset"),
                 self.action_keybinding_next,
                 "Preferences",
             ),
             Command(
                 "app.keybinding_list",
-                "List available keybinding presets",
+                _("List available keybinding presets"),
                 self.action_keybinding_list,
                 "Preferences",
             ),
-            Command("app.undo", "Undo last change", self.action_undo, "Edit"),
-            Command("app.redo", "Redo last undone change", self.action_redo, "Edit"),
+            Command("app.undo", _("Undo last change"), self.action_undo, "Edit"),
+            Command("app.redo", _("Redo last undone change"), self.action_redo, "Edit"),
             Command(
                 "app.toggle_terminal",
-                "Toggle terminal panel (Ctrl+T)",
+                _("Toggle terminal panel (Ctrl+T)"),
                 self.action_toggle_terminal,
                 "View",
             ),
