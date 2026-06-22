@@ -159,6 +159,7 @@ def _run_ced_test() -> Image.Image | None:
             proc.kill()
 
 
+@pytest.mark.visual
 @requires_screen_capture
 def test_pyautogui_capture_ced_window() -> None:
     """Launch ``ced`` in a terminal and capture the window with PyAutoGUI."""
@@ -168,6 +169,7 @@ def test_pyautogui_capture_ced_window() -> None:
     assert w > 100 and h > 50, f"Screenshot too small: {w}x{h}"
 
 
+@pytest.mark.visual
 @requires_screen_capture
 @requires_ocr
 def test_pyautogui_ocr_detects_ui_elements() -> None:
@@ -186,6 +188,7 @@ def test_pyautogui_ocr_detects_ui_elements() -> None:
     assert len(found) >= 1, f"OCR could not read any UI element from:\n{text}"
 
 
+@pytest.mark.visual
 @requires_screen_capture
 def test_pyautogui_screenshot_saved_to_png(tmp_path: Path) -> None:
     """Capture ced with PyAutoGUI and save the screenshot as PNG."""
@@ -197,6 +200,7 @@ def test_pyautogui_screenshot_saved_to_png(tmp_path: Path) -> None:
     assert dst.stat().st_size > 5000
 
 
+@pytest.mark.visual
 @requires_screen_capture
 def test_pyautogui_screenshot_has_expected_colors() -> None:
     """Basic pixel-level sanity: the terminal background is dark."""
@@ -219,6 +223,7 @@ def test_pyautogui_screenshot_has_expected_colors() -> None:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.visual
 @requires_screen_capture
 def test_opencv_pixel_stats() -> None:
     """Use OpenCV to examine the captured screenshot's pixel statistics.
@@ -238,6 +243,7 @@ def test_opencv_pixel_stats() -> None:
     assert std_val > 10, f"Image too uniform (std={std_val:.1f})"
 
 
+@pytest.mark.visual
 @requires_screen_capture
 @requires_ocr
 def test_opencv_ocr_on_saved_png(tmp_path: Path) -> None:
