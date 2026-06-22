@@ -116,6 +116,24 @@ def test_config_load_without_file() -> None:
     assert isinstance(cfg, Config)
 
 
+def test_config_load_skips_bad_toml(tmp_path: Path) -> None:
+    config_dir = tmp_path / ".config" / "ced"
+    config_dir.mkdir(parents=True)
+    bad_file = config_dir / "config.toml"
+    bad_file.write_text("{invalid toml content @@@")
+    import os
+    old = os.environ.get("HOME")
+    try:
+        os.environ["HOME"] = str(tmp_path)
+        cfg = Config.load()
+        assert cfg.theme.mode == "auto"
+    finally:
+        if old:
+            os.environ["HOME"] = old
+        else:
+            del os.environ["HOME"]
+
+
 def test_editor_config_invalid_tab_size_negative() -> None:
     cfg = EditorConfig(tab_size=-1)
     assert cfg.tab_size == 4

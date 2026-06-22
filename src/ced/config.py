@@ -78,17 +78,24 @@ class Config:
 
     @classmethod
     def load(cls) -> Config:
-        """Load and merge configuration from both config files."""
+        """Load and merge configuration from both config files.
+
+        If a config file is missing, unreadable, or contains invalid TOML,
+        it is silently skipped so the editor always starts with valid defaults.
+        """
         cfg = cls()
         paths = [
             Path.home() / ".config" / "ced" / "config.toml",
             Path.cwd() / ".ced" / "config.toml",
         ]
         for p in paths:
-            if p.exists():
-                with p.open("rb") as f:
-                    data = tomllib.load(f)
-                cfg._merge(data)
+            try:
+                if p.exists():
+                    with p.open("rb") as f:
+                        data = tomllib.load(f)
+                    cfg._merge(data)
+            except (OSError, tomllib.TOMLDecodeError, ValueError):
+                pass
         return cfg
 
     def _merge(self, data: dict) -> None:
