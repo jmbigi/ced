@@ -55,8 +55,10 @@ PRESET_DEFINITIONS: dict[str, list[TextualBinding]] = {
 
 
 def get_preset(name: KeybindingPreset) -> list[TextualBinding]:
+    """Return the keybinding list for the named preset (defaults to vscode)."""
     return PRESET_DEFINITIONS.get(name, PRESET_DEFINITIONS["vscode"])
 
 
 def list_presets() -> list[str]:
+    """Return the names of all available keybinding presets."""
     return list(PRESET_DEFINITIONS.keys())

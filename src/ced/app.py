@@ -40,6 +40,8 @@ from ced.themes.manager import (
 
 
 class Ced(App):
+    """Main terminal code editor application."""
+
     TITLE = "ced"
     SUB_TITLE = "Terminal Code Editor"
 
@@ -160,6 +162,7 @@ class Ced(App):
         )
 
     def compose(self) -> ComposeResult:
+        """Build the widget layout: sidebar, editor area, opencode panel, help bar."""
         with Horizontal():
             with Vertical(id="sidebar"):
                 yield FileTreePanel(id="file-tree", tooltip="File tree sidebar (Ctrl+B)")
@@ -228,6 +231,7 @@ class Ced(App):
     AUTOSAVE_INTERVAL = 300
 
     def on_mount(self) -> None:
+        """Apply theme, update help bar, start autosave, and register SIGHUP handler."""
         self._apply_theme()
         self._update_help_bar()
         self.set_interval(self.AUTOSAVE_INTERVAL, self._autosave)
@@ -279,6 +283,7 @@ class Ced(App):
         event.stop()
 
     def action_quit(self) -> None:
+        """Quit the application, prompting to save modified files."""
         editor = self.query_one("#editor", EditorArea)
         modified = [buf for buf in editor.buffers if buf.is_modified]
         if not modified:
@@ -297,6 +302,7 @@ class Ced(App):
         self.push_screen(QuitConfirmScreen(names), _on_quit)
 
     def emergency_save_and_exit(self) -> None:
+        """Save all modified buffers to disk and exit (called on SIGHUP)."""
         editor = self.query_one("#editor", EditorArea)
         recovery_dir = Path.home() / ".local" / "share" / "ced" / "recovery"
         recovery_dir.mkdir(parents=True, exist_ok=True)
