@@ -1,97 +1,57 @@
 from __future__ import annotations
 
+
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical
-from textual.screen import ModalScreen
-from textual.widgets import Button, Label
+from textual.screen import Screen
+from textual.widgets import Static, Button
 
 
-class ConfirmScreen(ModalScreen[bool]):
-    def __init__(self, message: str, title: str = "Confirm") -> None:
+class ConfirmScreen(Screen[bool]):
+    """Generic confirmation dialog with Save/Discard/Cancel options."""
+
+    def __init__(
+        self,
+        message: str,
+        title: str = "Confirm",
+    ) -> None:
         super().__init__()
         self._message = message
         self._title = title
 
-    DEFAULT_CSS = """
-    ConfirmScreen {
-        align: center middle;
-    }
-
-    ConfirmScreen > #dialog {
-        width: 50;
-        padding: 1 2;
-        border: thick $primary;
-        background: $surface;
-    }
-
-    ConfirmScreen #message {
-        margin: 1 0 2 0;
-        text-align: center;
-    }
-
-    ConfirmScreen #buttons {
-        align: center middle;
-    }
-
-    ConfirmScreen Button {
-        margin: 0 1;
-    }
-    """
-
     def compose(self) -> ComposeResult:
-        with Vertical(id="dialog"):
-            yield Label(self._message, id="message")
-            with Horizontal(id="buttons"):
-                yield Button("Cancel", id="cancel", variant="default")
-                yield Button("Close", id="close", variant="primary")
+        """Yield the title, message, and action buttons."""
+        yield Static(self._title, id="confirm-title")
+        yield Static(self._message, id="confirm-message")
+        with Static(id="confirm-buttons"):
+            yield Button("Save", id="save", variant="primary")
+            yield Button("Discard", id="discard", variant="error")
+            yield Button("Cancel", id="cancel")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.id == "close":
-            self.dismiss(True)
-        else:
-            self.dismiss(False)
+        """Dismiss with the button id as result."""
+        self.dismiss(event.button.id)
 
 
-class QuitConfirmScreen(ModalScreen[str]):
-    DEFAULT_CSS = """
-    QuitConfirmScreen {
-        align: center middle;
-    }
-    QuitConfirmScreen > #dialog {
-        width: 50;
-        padding: 1 2;
-        border: thick $primary;
-        background: $surface;
-    }
-    QuitConfirmScreen #message {
-        margin: 1 0 1 0;
-        text-align: center;
-    }
-    QuitConfirmScreen Label {
-        margin: 0 1;
-    }
-    QuitConfirmScreen #buttons {
-        align: center middle;
-        margin-top: 1;
-    }
-    QuitConfirmScreen Button {
-        margin: 0 1;
-    }
-    """
+class QuitConfirmScreen(Screen[str | None]):
+    """Quit confirmation showing modified files."""
 
-    def __init__(self, files: list[str]) -> None:
+    def __init__(
+        self,
+        names: list[str],
+    ) -> None:
         super().__init__()
-        self._files = files
+        self._names = names or []
 
     def compose(self) -> ComposeResult:
-        with Vertical(id="dialog"):
-            yield Label("You have unsaved changes:", id="message")
-            for f in self._files:
-                yield Label(f"  \u2022 {f}")
-            with Horizontal(id="buttons"):
-                yield Button("Save & Quit", id="save", variant="primary")
-                yield Button("Discard & Quit", id="discard", variant="error")
-                yield Button("Cancel", id="cancel", variant="default")
+        """Yield the quit confirmation UI."""
+        yield Static("Unsaved Changes", id="quit-title")
+        yield Static("\n".join(f"  • {n}" for n in self._names))
+        yield Static("Save changes before quitting?", id="quit-question")
+        with Static(id="quit-buttons"):
+            yield Button("Save All", id="save", variant="primary")
+            yield Button("Discard", id="discard", variant="error")
+            yield Button("Cancel", id="cancel")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Dismiss with save/discard/cancel."""
         self.dismiss(event.button.id)

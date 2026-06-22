@@ -11,18 +11,21 @@ from textual.widget import Widget
 from ced.editor.widget import EnhancedCodeEditor
 from ced.editor.buffer import BufferManager
 
+MAX_TABS = 100
+
 
 @dataclass
 class EditorSettings:
+    """Settings for the editor area: line numbers, wrapping, indentation."""
+
     show_line_numbers: bool = True
     soft_wrap: bool = False
     indent_width: int = 4
 
 
-MAX_TABS = 100
-
-
 class EditorArea(Widget):
+    """Multi-tab editor area managing tabs, editors, and buffers."""
+
     def __init__(
         self, editor_settings: EditorSettings | None = None, *args, **kwargs
     ) -> None:
@@ -34,6 +37,7 @@ class EditorArea(Widget):
         self._tab_counter = 0
 
     def compose(self) -> ComposeResult:
+        """Yield the initial untitled tab."""
         with TabbedContent(initial="tab_untitled"):
             with TabPane("untitled", id="tab_untitled"):
                 yield EnhancedCodeEditor(
@@ -44,6 +48,7 @@ class EditorArea(Widget):
                 )
 
     def on_mount(self) -> None:
+        """Register the initial editor and buffer."""
         self._editors["untitled"] = self.query_one(
             "#editor_untitled", EnhancedCodeEditor
         )
@@ -66,6 +71,7 @@ class EditorArea(Widget):
         return f"editor_{self._sanitize_id(name)}"
 
     def new_file(self) -> None:
+        """Create a new untitled tab."""
         if len(self._tab_ids) >= MAX_TABS:
             self.notify("Maximum tabs reached", severity="warning", timeout=3)
             return
@@ -91,6 +97,7 @@ class EditorArea(Widget):
         editor.focus()
 
     def open_file(self, path: Path | str) -> None:
+        """Open a file in a new or existing tab."""
         if isinstance(path, str):
             path = Path(path)
         if len(self._tab_ids) >= MAX_TABS:
@@ -136,6 +143,7 @@ class EditorArea(Widget):
         editor.focus()
 
     def get_active_editor(self) -> EnhancedCodeEditor | None:
+        """Return the editor widget in the active tab, or None."""
         tabs = self.query_one(TabbedContent)
         active = tabs.active
         if not active:
@@ -154,10 +162,12 @@ class EditorArea(Widget):
     def on_tabbed_content_tab_activated(
         self, event: TabbedContent.TabActivated
     ) -> None:
+        """Sync buffer index when the user switches tabs."""
         event.stop()
         self._sync_buffer_index()
 
     def tab_next(self) -> None:
+        """Switch to the next tab."""
         if not self._tab_ids:
             return
         tabs = self.query_one(TabbedContent)
@@ -170,6 +180,7 @@ class EditorArea(Widget):
         tabs.active = self._tab_ids[next_idx]
 
     def tab_prev(self) -> None:
+        """Switch to the previous tab."""
         if not self._tab_ids:
             return
         tabs = self.query_one(TabbedContent)
@@ -182,6 +193,7 @@ class EditorArea(Widget):
         tabs.active = self._tab_ids[prev_idx]
 
     def save_all_modified(self) -> None:
+        """Save all modified buffers that have an associated file path."""
         for i, buf in enumerate(self.buffers):
             if buf.is_modified and i < len(self._tab_ids):
                 name = self._tab_ids[i].removeprefix("tab_")
@@ -194,6 +206,7 @@ class EditorArea(Widget):
                         pass
 
     def save_active(self) -> bool:
+        """Save the active buffer. Returns True on success."""
         editor = self.get_active_editor()
         if not editor or not editor.file_path:
             return False
@@ -210,6 +223,7 @@ class EditorArea(Widget):
         return result
 
     def close_active(self) -> None:
+        """Close the active tab (or reset it if it's the last one)."""
         tabs = self.query_one(TabbedContent)
         active = tabs.active
         if active in ("", None):
@@ -229,6 +243,7 @@ class EditorArea(Widget):
         self._editors.pop(name, None)
 
     def on_text_area_changed(self, event: EnhancedCodeEditor.Changed) -> None:
+        """Mark the buffer as modified when the editor content changes."""
         event.stop()
         self._sync_buffer_index()
         buf = self.buffers.active_buffer

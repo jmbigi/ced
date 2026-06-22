@@ -7,6 +7,8 @@ from textual.containers import Vertical
 
 
 class CommandPalette(ModalScreen[str | None]):
+    """Modal command palette with fuzzy filtering of registered commands."""
+
     DEFAULT_CSS = """
     CommandPalette {
         align: center middle;
@@ -14,7 +16,7 @@ class CommandPalette(ModalScreen[str | None]):
 
     CommandPalette > Vertical {
         width: 60;
-        height: 70%;
+        height: 60%;
         border: thick $primary;
         background: $surface;
     }
@@ -29,65 +31,72 @@ class CommandPalette(ModalScreen[str | None]):
         margin: 0 1 1 1;
     }
 
-    CommandPalette ListItem {
-        padding: 0 1;
-    }
-
-    CommandPalette ListItem > Label {
-        width: 1fr;
-    }
-
-    CommandPalette .command-id {
+    CommandPalette .command-category {
         color: $text-muted;
-        padding: 0 1;
+        margin-left: 1;
     }
     """
 
-    def __init__(self, commands: list[tuple[str, str, str]]) -> None:
+    def __init__(
+        self, commands: list[tuple[str, str, str]]
+    ) -> None:
         super().__init__()
         self._all_commands = commands
-        self._filtered: list[tuple[str, str, str]] = list(commands)
+        self._filtered = commands
 
     def compose(self) -> ComposeResult:
+        """Yield the command input and results list."""
         with Vertical():
             yield Input(placeholder="Type a command...", id="palette-input")
             yield ListView(id="palette-list")
 
     def on_mount(self) -> None:
+        """Populate the list and focus the input."""
         self._populate(self._all_commands)
         self.query_one("#palette-input", Input).focus()
 
     def _populate(self, commands: list[tuple[str, str, str]]) -> None:
         list_view = self.query_one("#palette-list", ListView)
         list_view.clear()
-        for cmd_id, cmd_name, cmd_category in commands:
+        for cmd_id, desc, cat in commands:
             item = ListItem(
-                Label(f"[bold]{cmd_name}[/bold]"),
-                Label(f"[dim]{cmd_category}[/dim]  {cmd_id}", classes="command-id"),
+                Label(f"{cmd_id}  {desc}"),
+                Label(cat, classes="command-category"),
             )
             list_view.append(item)
+        self._filtered = commands
         if commands:
             list_view.index = 0
 
     def on_input_changed(self, event: Input.Changed) -> None:
+        """Filter commands as the user types."""
         query = event.value.lower()
         if not query:
             self._populate(self._all_commands)
             return
         filtered = [
-            c
-            for c in self._all_commands
-            if query in c[0].lower() or query in c[1].lower()
+            (cid, desc, cat)
+            for cid, desc, cat in self._all_commands
+            if query in cid.lower()
+            or query in desc.lower()
+            or query in cat.lower()
         ]
         self._populate(filtered)
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
-        if event.item:
-            index = self.query_one("#palette-list", ListView).index
-            if index is not None and 0 <= index < len(self._filtered):
-                self.dismiss(self._filtered[index][0])
+        """Dismiss with the selected command id."""
+        list_view = self.query_one("#palette-list", ListView)
+        idx = list_view.index
+        if idx is not None and 0 <= idx < len(self._filtered):
+            self.dismiss(self._filtered[idx][0])
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
+        """Dismiss with the currently highlighted command."""
         list_view = self.query_one("#palette-list", ListView)
-        if list_view.index is not None and 0 <= list_view.index < len(self._filtered):
-            self.dismiss(self._filtered[list_view.index][0])
+        idx = list_view.index
+        if idx is not None and 0 <= idx < len(self._filtered):
+            self.dismiss(self._filtered[idx][0])
+
+    def key_escape(self) -> None:
+        """Dismiss without selecting a command."""
+        self.dismiss(None)

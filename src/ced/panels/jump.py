@@ -1,40 +1,29 @@
 from __future__ import annotations
 
 from textual.app import ComposeResult
-from textual.screen import Screen
-from textual.widgets import Label
-from textual.containers import Vertical
+from textual.events import Key
+from textual.screen import ModalScreen
+from textual.widgets import Static
 
 
-class JumpMode(Screen[str | None]):
+class JumpMode(ModalScreen[str | None]):
+    """Modal screen for 2-character jump navigation.
+
+    The user types two characters and the editor jumps to their
+    first occurrence in the active file.
+    """
+
     DEFAULT_CSS = """
     JumpMode {
         align: center middle;
     }
 
-    JumpMode > Vertical {
-        width: 40;
-        height: 6;
-        border: thick $secondary;
+    JumpMode > Static {
+        width: 12;
+        height: 3;
+        border: thick $primary;
         background: $surface;
-        align: center middle;
-    }
-
-    JumpMode Label {
-        text-align: center;
-    }
-
-    JumpMode .key-display {
-        width: 100%;
-        padding: 1;
-        background: $boost;
-        color: $text;
-        text-style: bold;
-        text-align: center;
-    }
-
-    JumpMode .hint {
-        color: $text-muted;
+        content-align: center middle;
     }
     """
 
@@ -43,31 +32,32 @@ class JumpMode(Screen[str | None]):
         self._buffer = ""
 
     def compose(self) -> ComposeResult:
-        with Vertical():
-            yield Label("Jump Mode: type 2 characters to jump to", classes="hint")
-            yield Label("__", id="jump-display", classes="key-display")
+        """Yield the jump label widget."""
+        yield Static("__", id="jump-label")
 
     def on_mount(self) -> None:
+        """Update display on mount."""
         self._update_display()
 
     def _update_display(self) -> None:
-        display = self.query_one("#jump-display", Label)
-        display.update(self._buffer.ljust(2, "_"))
+        chars = self._buffer.ljust(2, "_")
+        self.query_one("#jump-label", Static).update(chars)
 
-    def key_press(self, event) -> None:
-        char = event.character
-        if char is None:
+    def key_press(self, event: Key) -> None:
+        """Accumulate up to 2 characters then dismiss."""
+        ch = event.character
+        if ch is None:
             return
-        if len(self._buffer) < 2:
-            self._buffer += char
-            self._update_display()
-        if len(self._buffer) == 2:
+        self._buffer += ch
+        self._update_display()
+        if len(self._buffer) >= 2:
             self.dismiss(self._buffer)
 
     def key_backspace(self) -> None:
-        if self._buffer:
-            self._buffer = self._buffer[:-1]
-            self._update_display()
+        """Remove the last character from the buffer."""
+        self._buffer = self._buffer[:-1]
+        self._update_display()
 
     def key_escape(self) -> None:
+        """Dismiss without jumping."""
         self.dismiss(None)

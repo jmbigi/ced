@@ -1,52 +1,45 @@
 from __future__ import annotations
 
-
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical
 from textual.message import Message
-from textual.widgets import Input, Button, Label
+from textual.widgets import Input, Button
 from textual.widget import Widget
+from textual.containers import Horizontal
 
 
 class SearchBar(Widget):
+    """Find and Replace widget with toggleable replace UI."""
+
     DEFAULT_CSS = """
     SearchBar {
-        dock: top;
         height: auto;
+        border: solid $primary;
         background: $surface;
-        padding: 0 1;
-        border-bottom: solid $primary;
+        display: none;
     }
 
     SearchBar Input {
-        width: 30;
+        width: 1fr;
     }
 
-    SearchBar > Vertical {
+    #replace-row {
         height: auto;
-    }
-
-    SearchBar > Vertical > Horizontal {
-        height: 1;
-    }
-
-    SearchBar .label {
-        width: auto;
-        padding: 0 1;
-    }
-
-    SearchBar #replace-row {
-        display: none;
     }
     """
 
     class SearchRequested(Message):
-        def __init__(self, query: str) -> None:
+        """Posted when the user submits a search query."""
+
+        def __init__(self, query: str, find_text: str = "") -> None:
             super().__init__()
             self.query = query
 
     class ReplaceRequested(Message):
-        def __init__(self, find: str, replace: str, all: bool = False) -> None:
+        """Posted when the user requests a replacement."""
+
+        def __init__(
+            self, find: str, replace: str, all: bool = False
+        ) -> None:
             super().__init__()
             self.find = find
             self.replace = replace
@@ -57,27 +50,25 @@ class SearchBar(Widget):
         self._show_replace = False
 
     def compose(self) -> ComposeResult:
-        with Vertical():
-            with Horizontal():
-                yield Label("Find:", classes="label")
-                yield Input(placeholder="Search...", id="find-input")
-                yield Button("▽", id="toggle-replace", variant="default")
-                yield Button("×", id="close-search", variant="default")
-            with Horizontal(id="replace-row"):
-                yield Label("Replace:", classes="label")
-                yield Input(placeholder="Replace...", id="replace-input")
-                yield Button("Replace", id="replace-btn", variant="primary")
-                yield Button("All", id="replace-all-btn", variant="default")
+        """Yield the find and replace UI rows."""
+        with Horizontal():
+            yield Input(placeholder="Find...", id="find-input")
+            yield Button("X", id="close-search", variant="error")
+            yield Button("Aa", id="toggle-replace")
+        with Horizontal(id="replace-row"):
+            yield Input(placeholder="Replace...", id="replace-input")
+            yield Button("Replace", id="replace-btn")
+            yield Button("All", id="replace-all-btn")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.id == "close-search":
+        """Handle search bar button clicks."""
+        bid = event.button.id
+        if bid == "close-search":
             self.display = False
-        elif event.button.id == "toggle-replace":
+        elif bid == "toggle-replace":
             self._show_replace = not self._show_replace
-            row = self.query_one("#replace-row")
-            row.display = self._show_replace
-            event.button.label = "△" if self._show_replace else "▽"
-        elif event.button.id == "replace-btn":
+            self.query_one("#replace-row").display = self._show_replace
+        elif bid == "replace-btn":
             self.post_message(
                 self.ReplaceRequested(
                     self.get_search_text(),
@@ -85,7 +76,7 @@ class SearchBar(Widget):
                     all=False,
                 )
             )
-        elif event.button.id == "replace-all-btn":
+        elif bid == "replace-all-btn":
             self.post_message(
                 self.ReplaceRequested(
                     self.get_search_text(),
@@ -95,18 +86,21 @@ class SearchBar(Widget):
             )
 
     def show_replace_ui(self, show: bool) -> None:
+        """Toggle the replace row visibility."""
         self._show_replace = show
-        row = self.query_one("#replace-row")
-        row.display = show
-        toggle = self.query_one("#toggle-replace")
-        toggle.label = "△" if show else "▽"
+        self.query_one("#replace-row").display = show
 
     def get_search_text(self) -> str:
+        """Return the current search query."""
         return self.query_one("#find-input", Input).value
 
     def get_replace_text(self) -> str:
+        """Return the current replace text."""
         return self.query_one("#replace-input", Input).value
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
+        """Post a search request when the user presses Enter."""
         if event.input.id == "find-input":
-            self.post_message(self.SearchRequested(self.get_search_text()))
+            self.post_message(
+                self.SearchRequested(self.get_search_text())
+            )
